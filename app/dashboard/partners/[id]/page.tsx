@@ -9,12 +9,8 @@ import ChatTab from '@/components/partner-tabs/ChatTab';
 import prisma from '@/lib/prisma';
 
 const TYPE_LABELS: Record<string, string> = {
-  CLIENT: 'Client', FOURNISSEUR: 'Fournisseur', SOUS_TRAITANT: 'Sous-traitant', PRESTATAIRE: 'Prestataire',
-};
-const STATUS_STYLES: Record<string, string> = {
-  ACTIF: 'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]',
-  INACTIF: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]',
-  EN_ATTENTE: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]',
+  CLIENT: 'Client', FOURNISSEUR: 'Fournisseur',
+  SOUS_TRAITANT: 'Sous-traitant', PRESTATAIRE: 'Prestataire',
 };
 
 export default async function PartnerDetailsPage({
@@ -43,16 +39,21 @@ export default async function PartnerDetailsPage({
     ? lastDoc.createdAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })
     : '—';
 
+  const statusStyle = {
+    ACTIF:      { cls: 'badge-green',  label: 'Actif' },
+    INACTIF:    { cls: 'badge-red',    label: 'Inactif' },
+    EN_ATTENTE: { cls: 'badge-orange', label: 'En attente' },
+  }[partner.status] ?? { cls: 'badge-gray', label: partner.status };
+
   const tabs = [
     { id: 'documents', label: 'Documents' },
-    { id: 'marche', label: 'Suivi marché' },
-    { id: 'infos', label: 'Infos à transmettre' },
-    { id: 'banques', label: 'Banques & Créances' },
-    { id: 'chat', label: 'Chat' },
-    { id: 'historique', label: 'Historique' },
+    { id: 'marche',    label: 'Suivi marché' },
+    { id: 'infos',     label: 'Infos à transmettre' },
+    { id: 'banques',   label: 'Banques & Créances' },
+    { id: 'chat',      label: 'Chat' },
+    { id: 'historique',label: 'Historique' },
   ];
 
-  // Serialize dates for client components
   const serializedDocs = partner.documents.map(d => ({
     id: d.id, name: d.name, fileType: d.fileType, size: d.size, url: d.url,
     createdAt: d.createdAt.toISOString(),
@@ -62,8 +63,7 @@ export default async function PartnerDetailsPage({
   const serializedMessages = partner.messages.map(m => ({
     id: m.id, subject: m.subject, content: m.content,
     createdAt: m.createdAt.toISOString(),
-    author: m.author,
-    attachedDoc: m.attachedDoc,
+    author: m.author, attachedDoc: m.attachedDoc,
   }));
 
   const serializedInvoices = partner.invoices.map(i => ({
@@ -100,33 +100,32 @@ export default async function PartnerDetailsPage({
     <DashboardLayout userInitials="ML" pageTitle={partner.orgName}>
 
       {/* HEADER */}
-      <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px] mb-[20px]">
-        <div className="flex flex-col lg:flex-row justify-between items-start gap-[24px]">
-          <div className="flex items-center gap-[16px]">
-            <div className="w-[56px] h-[56px] rounded-full bg-[#F7F7F6] border border-[#E8E7E4] flex items-center justify-center text-[18px] font-medium text-[#1A3A5C] flex-shrink-0">
+      <div className="rounded-[10px] p-5 sm:p-6 mb-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        <div className="flex flex-col lg:flex-row justify-between items-start gap-5">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center text-[18px] font-medium flex-shrink-0"
+              style={{ background: 'var(--navy)', color: 'var(--gold)' }}>
               {partner.orgName.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-[18px] font-medium text-[#1A1A19]">{partner.orgName}</h2>
-              <div className="text-[13px] text-[#6B6A67] mt-[2px]">{partner.contactName} · {partner.email}</div>
-              <div className="flex gap-[8px] mt-[10px]">
-                <span className="inline-block border border-[#E8E7E4] bg-transparent text-[#6B6A67] py-[2px] px-[8px] rounded-[4px] text-[12px]">
-                  {TYPE_LABELS[partner.type] ?? partner.type}
-                </span>
-                <span className={`inline-block border rounded-[4px] p-[2px_8px] text-[12px] ${STATUS_STYLES[partner.status] ?? ''}`}>
-                  {partner.status}
-                </span>
+              <h2 className="text-[18px] font-medium" style={{ color: 'var(--text-primary)' }}>{partner.orgName}</h2>
+              <div className="text-[13px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{partner.contactName} · {partner.email}</div>
+              <div className="flex flex-wrap gap-2 mt-2.5">
+                <span className="badge badge-gray">{TYPE_LABELS[partner.type] ?? partner.type}</span>
+                <span className={`badge ${statusStyle.cls}`}>{statusStyle.label}</span>
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-[8px]">
+          <div className="flex flex-wrap gap-2">
             <Link href={`/dashboard/partners/${partner.id}/edit`}
-              className="border border-[#E8E7E4] bg-transparent text-[#1A1A19] py-[6px] px-[12px] rounded-[6px] text-[12px] hover:bg-[#F7F7F6] transition-colors">
+              className="py-1.5 px-3 rounded-[6px] text-[12px] transition-colors"
+              style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
               Modifier
             </Link>
             <Link href={`/partner/${partner.token}`} target="_blank"
-              className="flex items-center gap-[6px] border border-[#E8E7E4] bg-transparent text-[#1A1A19] py-[6px] px-[12px] rounded-[6px] text-[12px] hover:bg-[#F7F7F6] transition-colors">
+              className="flex items-center gap-1.5 py-1.5 px-3 rounded-[6px] text-[12px] transition-colors"
+              style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
               Voir l&apos;espace partenaire
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
@@ -136,36 +135,32 @@ export default async function PartnerDetailsPage({
         </div>
 
         {/* MÉTRIQUES */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-[12px] mt-[24px]">
-          <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[12px]">
-            <div className="text-[15px] font-medium text-[#1A1A19]">{partner._count.documents}</div>
-            <div className="text-[12px] text-[#6B6A67] mt-[2px]">Documents</div>
-          </div>
-          <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[12px]">
-            <div className="text-[15px] font-medium text-[#1A1A19]">{partner._count.messages}</div>
-            <div className="text-[12px] text-[#6B6A67] mt-[2px]">Messages envoyés</div>
-          </div>
-          <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[12px]">
-            <div className="text-[15px] font-medium text-[#1A1A19]">{partner._count.invoices}</div>
-            <div className="text-[12px] text-[#6B6A67] mt-[2px]">Factures</div>
-          </div>
-          <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[12px]">
-            <div className="text-[14px] font-medium text-[#1A1A19]">{lastActivity}</div>
-            <div className="text-[12px] text-[#6B6A67] mt-[2px]">Dernier document</div>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
+          {[
+            { val: partner._count.documents, label: 'Documents' },
+            { val: partner._count.messages,  label: 'Messages envoyés' },
+            { val: partner._count.invoices,  label: 'Factures' },
+            { val: lastActivity,             label: 'Dernier document' },
+          ].map((m, i) => (
+            <div key={i} className="rounded-[8px] p-3" style={{ background: 'var(--bg-dash)', border: '1px solid var(--border)' }}>
+              <div className="text-[15px] font-medium" style={{ color: 'var(--text-primary)' }}>{m.val}</div>
+              <div className="text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{m.label}</div>
+            </div>
+          ))}
         </div>
       </div>
 
       {/* TABS */}
-      <div className="flex overflow-x-auto border-b border-[#E8E7E4] mb-[20px] hide-scrollbar">
+      <div className="flex overflow-x-auto mb-5 hide-scrollbar" style={{ borderBottom: '1px solid var(--border)' }}>
         {tabs.map(tab => (
           <Link key={tab.id}
             href={`/dashboard/partners/${partner.id}?tab=${tab.id}`}
-            className={`whitespace-nowrap py-[10px] px-[20px] text-[13px] transition-colors border-b-2 ${
-              currentTab === tab.id
-                ? 'text-[#1A1A19] font-medium border-[#1A3A5C]'
-                : 'text-[#6B6A67] border-transparent hover:text-[#1A1A19]'
-            }`}>
+            className="whitespace-nowrap py-2.5 px-5 text-[13px] transition-colors border-b-2"
+            style={{
+              color: currentTab === tab.id ? 'var(--text-primary)' : 'var(--text-muted)',
+              fontWeight: currentTab === tab.id ? 500 : 400,
+              borderBottomColor: currentTab === tab.id ? 'var(--navy-mid)' : 'transparent',
+            }}>
             {tab.label}
           </Link>
         ))}
@@ -197,23 +192,25 @@ export default async function PartnerDetailsPage({
           <ChatTab partnerId={partner.id} partnerName={partner.orgName} initialMessages={serializedChat} />
         )}
         {currentTab === 'historique' && (
-          <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px]">
-            <div className="relative pl-[8px]">
-              <div className="absolute left-[15px] top-[8px] bottom-0 w-[1px] bg-[#E8E7E4]"></div>
-              <div className="flex flex-col gap-[24px]">
+          <div className="rounded-[10px] p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+            <div className="relative pl-2">
+              <div className="absolute left-[15px] top-2 bottom-0 w-px" style={{ background: 'var(--border)' }} />
+              <div className="flex flex-col gap-6">
                 {partner.documents.slice(0, 10).map(doc => (
-                  <div key={doc.id} className="flex gap-[16px] relative z-10">
-                    <div className="w-[16px] h-[16px] rounded-full bg-[#1A3A5C] flex-shrink-0 mt-[2px]"></div>
+                  <div key={doc.id} className="flex gap-4 relative z-10">
+                    <div className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5" style={{ background: 'var(--navy-mid)' }} />
                     <div>
-                      <p className="text-[13px] text-[#1A1A19]">Document partagé : <strong>{doc.name}</strong></p>
-                      <span className="block text-[12px] text-[#6B6A67] mt-[2px]">
+                      <p className="text-[13px]" style={{ color: 'var(--text-primary)' }}>
+                        Document partagé : <strong>{doc.name}</strong>
+                      </p>
+                      <span className="block text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
                         {doc.createdAt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
                   </div>
                 ))}
                 {partner.documents.length === 0 && (
-                  <p className="text-[13px] text-[#6B6A67]">Aucune activité enregistrée.</p>
+                  <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>Aucune activité enregistrée.</p>
                 )}
               </div>
             </div>

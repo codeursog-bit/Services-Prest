@@ -79,11 +79,26 @@ body {
 }
 .input-field:focus { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold-light); }
 
+/* Inputs & selects en dark mode */
+.dash-input {
+  width: 100%; padding: 10px 14px;
+  border: 1px solid var(--border); border-radius: 6px;
+  font-size: 14px; background: var(--bg-card);
+  color: var(--text-primary); outline: none;
+  transition: border-color 0.15s; font-family: inherit;
+}
+.dash-input:focus { border-color: var(--navy-mid); box-shadow: 0 0 0 2px rgba(26,58,92,0.15); }
+
 .badge { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 500; }
 .badge-green  { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green); }
 .badge-red    { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red); }
 .badge-orange { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange); }
 .badge-gray   { background: var(--bg-surface); color: var(--text-secondary); border: 1px solid var(--border); }
+
+/* Status badges (dash pages) */
+.status-paye   { background: var(--green-bg);  color: var(--green);  border: 1px solid var(--green);  display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+.status-cours  { background: var(--orange-bg); color: var(--orange); border: 1px solid var(--orange); display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
+.status-solde  { background: var(--red-bg);    color: var(--red);    border: 1px solid var(--red);    display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: 12px; }
 
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -91,6 +106,13 @@ body {
 
 @keyframes fadeIn { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
 .animate-fade-in { animation: fadeIn 0.2s ease forwards; }
+
+/* Hover CSS pur — évite les event handlers dans les Server Components */
+.card-hover:hover { border-color: var(--gold) !important; }
+.row-hover:hover { background: var(--bg-surface) !important; }
+
+/* Dashboard — table rows dark mode */
+.dash-table-row:hover { background: var(--bg-surface) !important; }
 
 @media (max-width: 768px) {
   .sidebar-mobile-hidden { display: none !important; }

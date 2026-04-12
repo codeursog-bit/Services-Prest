@@ -72,10 +72,8 @@ export default function ServicesPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
               {mainServices.map((s, i) => (
-                <div key={i} className="rounded-[12px] p-7 transition-all"
-                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
-                  onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--gold)')}
-                  onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
+                <div key={i} className="rounded-[12px] p-7 transition-all service-card-hover"
+                  style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
                   <div className="w-11 h-11 rounded-[10px] flex items-center justify-center mb-5" style={{ background: 'var(--navy)' }}>
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                       {s.icon}

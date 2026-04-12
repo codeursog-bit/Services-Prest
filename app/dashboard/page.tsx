@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
@@ -8,7 +10,7 @@ export default function DashboardHomePage() {
     {
       val: '14',
       label: 'Partenaires actifs',
-      sub: 'Mis à jour aujourd\'hui',
+      sub: "Mis à jour aujourd'hui",
       style: { background: 'var(--navy)', border: 'none', color: '#fff' },
       subStyle: { color: 'rgba(255,255,255,0.5)', borderTop: '1px solid rgba(255,255,255,0.1)' },
       valStyle: { color: 'var(--gold)' },
@@ -85,7 +87,7 @@ export default function DashboardHomePage() {
             <Link href="/dashboard/partners" className="text-[12px] transition-colors" style={{ color: 'var(--gold)' }}>Voir tout →</Link>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full" style={{ minWidth: 400 }}>
+            <table className="w-full" style={{ minWidth: 360 }}>
               <thead>
                 <tr style={{ background: 'var(--bg-dash)' }}>
                   {['Partenaire', 'Action', 'Date', 'Statut'].map(h => (
@@ -95,10 +97,10 @@ export default function DashboardHomePage() {
               </thead>
               <tbody>
                 {activity.map((a, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                  <tr key={i} className="dash-table-row" style={{ borderBottom: '1px solid var(--border-light)' }}>
                     <td className="py-3 px-3 text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>{a.partner}</td>
                     <td className="py-3 px-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>{a.action} · {a.doc}</td>
-                    <td className="py-3 px-3 text-[12px]" style={{ color: 'var(--text-muted)' }}>Aujourd'hui</td>
+                    <td className="py-3 px-3 text-[12px]" style={{ color: 'var(--text-muted)' }}>{"Aujourd'hui"}</td>
                     <td className="py-3 px-3">
                       <span className={`badge ${a.statusClass}`}>{a.status}</span>
                     </td>
@@ -135,10 +137,8 @@ export default function DashboardHomePage() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {recentPartners.map((p, i) => (
             <Link key={i} href={`/dashboard/partners/${i + 1}`}
-              className="rounded-[8px] p-4 block transition-all"
-              style={{ border: '1px solid var(--border)', background: 'var(--bg-dash)' }}
-              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--gold)')}
-              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
+              className="rounded-[8px] p-4 block transition-all card-hover"
+              style={{ border: '1px solid var(--border)', background: 'var(--bg-dash)' }}>
               <div className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium mb-3"
                 style={{ background: 'var(--navy)', color: 'var(--gold)' }}>
                 {p.initials}

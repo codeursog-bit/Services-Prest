@@ -11,20 +11,22 @@ export default function ContratClient() {
     const file = e.target.files?.[0];
     if (!file) return;
     setMsg('');
-    // Placeholder — nécessite une server action uploadContractVersion()
-    // à créer avec S3 + prisma.contractVersion.create()
+    // Placeholder — connecter à la server action uploadContractVersion()
     setMsg('Upload à connecter à la server action uploadContractVersion()');
   };
 
   return (
-    <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[16px] flex items-center gap-[12px]">
-      <button onClick={() => fileInputRef.current?.click()} disabled={isPending}
-        className="border border-[#E8E7E4] bg-[#FFFFFF] text-[#1A1A19] py-[8px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#F7F7F6] disabled:opacity-60">
+    <div className="rounded-[8px] p-4 flex flex-wrap items-center gap-3" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isPending}
+        className="py-2 px-4 rounded-[6px] text-[13px] font-medium transition-colors disabled:opacity-60"
+        style={{ background: 'var(--bg-card)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
         {isPending ? 'Upload…' : 'Ajouter une nouvelle version'}
       </button>
-      <span className="text-[12px] text-[#6B6A67]">PDF uniquement</span>
+      <span className="text-[12px]" style={{ color: 'var(--text-muted)' }}>PDF uniquement</span>
       <input ref={fileInputRef} type="file" className="hidden" accept=".pdf" onChange={handleUpload} />
-      {msg && <span className="text-[12px] text-[#8B4513]">{msg}</span>}
+      {msg && <span className="text-[12px]" style={{ color: 'var(--orange)' }}>{msg}</span>}
     </div>
   );
 }
