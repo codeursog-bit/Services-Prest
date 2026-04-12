@@ -2,195 +2,155 @@ import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
 export default function DashboardHomePage() {
-  // Dans un cas réel, ces données viendraient de la DB via le Server Component
-  const userInitials = "ML";
-  const mockMetrics = {
-    partners: 14,
-    docs: 32,
-    invoices: 4,
-    totalAmount: "12 500 000",
-    projects: 5
-  };
+  const userInitials = 'ML';
+
+  const metrics = [
+    {
+      val: '14',
+      label: 'Partenaires actifs',
+      sub: 'Mis à jour aujourd\'hui',
+      style: { background: 'var(--navy)', border: 'none', color: '#fff' },
+      subStyle: { color: 'rgba(255,255,255,0.5)', borderTop: '1px solid rgba(255,255,255,0.1)' },
+      valStyle: { color: 'var(--gold)' },
+    },
+    {
+      val: '32',
+      label: 'Documents partagés ce mois',
+      sub: '+8 cette semaine',
+      style: { background: 'var(--bg-card)', border: '1px solid var(--border)' },
+      subStyle: { color: 'var(--text-muted)', borderTop: '1px solid var(--border)' },
+      valStyle: { color: 'var(--text-primary)' },
+    },
+    {
+      val: '4',
+      label: 'Factures en cours',
+      sub: '12 500 000 FCFA',
+      style: { background: 'var(--orange-bg)', border: '1px solid var(--orange)' },
+      subStyle: { color: 'var(--orange)', borderTop: '1px solid rgba(139,69,19,0.2)' },
+      valStyle: { color: 'var(--orange)' },
+    },
+    {
+      val: '5',
+      label: 'Marchés actifs',
+      sub: '2 en clôture ce mois',
+      style: { background: 'var(--green-bg)', border: '1px solid var(--green)' },
+      subStyle: { color: 'var(--green)', borderTop: '1px solid rgba(45,106,79,0.2)' },
+      valStyle: { color: 'var(--green)' },
+    },
+  ];
+
+  const activity = [
+    { partner: 'Total Gabon', action: 'Document partagé', doc: 'Audit T1 2026', status: 'Partagé', statusClass: 'badge-green' },
+    { partner: 'Sogea-Satom', action: 'Compte rendu', doc: 'Réunion 08/04', status: 'Partagé', statusClass: 'badge-green' },
+    { partner: 'Bolloré Matériaux', action: 'Facture', doc: 'FAC-2026-041', status: 'En cours', statusClass: 'badge-orange' },
+    { partner: 'TotalEnergies', action: 'Info transmise', doc: 'Planning semaine 17', status: 'Envoyé', statusClass: 'badge-gray' },
+  ];
+
+  const notifications = [
+    { text: 'Document partagé avec Total Gabon', time: 'il y a 2h', read: false },
+    { text: 'Nouveau message de Sogea-Satom', time: 'il y a 5h', read: false },
+    { text: 'Facture FAC-2026-041 en attente', time: 'Hier', read: true },
+    { text: 'Audit T1 consulté par le partenaire', time: 'il y a 2j', read: true },
+  ];
+
+  const recentPartners = [
+    { initials: 'TG', name: 'Total Gabon', type: 'Client', docs: 8, status: 'Actif' },
+    { initials: 'SS', name: 'Sogea-Satom', type: 'Sous-traitant', docs: 3, status: 'Actif' },
+    { initials: 'BM', name: 'Bolloré Matériaux', type: 'Fournisseur', docs: 12, status: 'Actif' },
+  ];
 
   return (
     <DashboardLayout userInitials={userInitials} pageTitle="Vue d'ensemble">
-      
+
       {/* ROW 1 — 4 métriques */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-[12px]">
-        {/* M1 */}
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px_24px]">
-          <div className="text-[28px] font-medium text-[#1A1A19]">{mockMetrics.partners}</div>
-          <div className="text-[12px] text-[#6B6A67] mt-[4px]">Partenaires actifs</div>
-          <div className="text-[11px] text-[#6B6A67] mt-[12px] border-t border-[#E8E7E4] pt-[10px]">
-            Dernière mise à jour aujourd'hui
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        {metrics.map((m, i) => (
+          <div key={i} className="rounded-[10px] p-5" style={m.style}>
+            <div className="text-[28px] font-medium" style={m.valStyle}>{m.val}</div>
+            <div className="text-[12px] mt-1" style={{ color: m.style.background === 'var(--navy)' ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)' }}>
+              {m.label}
+            </div>
+            <div className="text-[11px] mt-3 pt-2" style={m.subStyle}>{m.sub}</div>
           </div>
-        </div>
-
-        {/* M2 */}
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px_24px]">
-          <div className="text-[28px] font-medium text-[#1A1A19]">{mockMetrics.docs}</div>
-          <div className="text-[12px] text-[#6B6A67] mt-[4px]">Documents partagés ce mois</div>
-          <div className="text-[11px] text-[#6B6A67] mt-[12px] border-t border-[#E8E7E4] pt-[10px]">
-            +8 cette semaine
-          </div>
-        </div>
-
-        {/* M3 */}
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px_24px]">
-          <div className="text-[28px] font-medium text-[#1A1A19]">{mockMetrics.invoices}</div>
-          <div className="text-[12px] text-[#6B6A67] mt-[4px]">Factures en cours</div>
-          <div className="text-[11px] text-[#6B6A67] mt-[12px] border-t border-[#E8E7E4] pt-[10px]">
-            {mockMetrics.totalAmount} FCFA
-          </div>
-        </div>
-
-        {/* M4 */}
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px_24px]">
-          <div className="text-[28px] font-medium text-[#1A1A19]">{mockMetrics.projects}</div>
-          <div className="text-[12px] text-[#6B6A67] mt-[4px]">Marchés en cours</div>
-          <div className="text-[11px] text-[#6B6A67] mt-[12px] border-t border-[#E8E7E4] pt-[10px]">
-            1 en clôture ce mois
-          </div>
-        </div>
+        ))}
       </div>
 
-      {/* ROW 2 — Activité et Notifications */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-[16px] mt-[20px]">
-        
-        {/* COLONNE GRANDE (66%) — Activité récente */}
-        <div className="lg:col-span-2 bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px_24px]">
-          <h2 className="text-[14px] font-medium text-[#1A1A19] mb-[16px]">Activité récente</h2>
-          
-          <div className="w-full overflow-x-auto">
-            <table className="w-full text-left">
+      {/* ROW 2 — Activité + Notifications */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+
+        {/* Activité (2/3) */}
+        <div className="lg:col-span-2 rounded-[12px] p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>Activité récente</div>
+            <Link href="/dashboard/partners" className="text-[12px] transition-colors" style={{ color: 'var(--gold)' }}>Voir tout →</Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full" style={{ minWidth: 400 }}>
               <thead>
-                <tr>
-                  <th className="pb-[12px] text-[12px] font-medium text-[#6B6A67] border-b border-[#E8E7E4]">Partenaire</th>
-                  <th className="pb-[12px] text-[12px] font-medium text-[#6B6A67] border-b border-[#E8E7E4]">Action</th>
-                  <th className="pb-[12px] text-[12px] font-medium text-[#6B6A67] border-b border-[#E8E7E4]">Date</th>
-                  <th className="pb-[12px] text-[12px] font-medium text-[#6B6A67] border-b border-[#E8E7E4]">Statut</th>
+                <tr style={{ background: 'var(--bg-dash)' }}>
+                  {['Partenaire', 'Action', 'Date', 'Statut'].map(h => (
+                    <th key={h} className="text-left text-[11px] font-medium py-2 px-3 first:rounded-l-[6px] last:rounded-r-[6px]" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="text-[13px] text-[#1A1A19]">
-                {/* Ligne 1 */}
-                <tr className="bg-[#FFFFFF]">
-                  <td className="py-[12px] border-b border-[#E8E7E4]">Société Alpha SA</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">Partage document (Kbis)</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">Aujourd'hui, 10:45</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">
-                    <span className="inline-block border border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE] rounded-[4px] p-[2px_8px] text-[10px]">Partagé</span>
-                  </td>
-                </tr>
-                {/* Ligne 2 */}
-                <tr className="bg-[#F7F7F6]">
-                  <td className="py-[12px] border-b border-[#E8E7E4] pl-[8px]">Entreprise Beta</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">Signature contrat</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">Hier, 16:30</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">
-                    <span className="inline-block border border-[#8B4513] text-[#8B4513] bg-[#FEF3E2] rounded-[4px] p-[2px_8px] text-[10px]">En attente</span>
-                  </td>
-                </tr>
-                {/* Ligne 3 */}
-                <tr className="bg-[#FFFFFF]">
-                  <td className="py-[12px] border-b border-[#E8E7E4]">Construction & Co</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">Lecture rapport QHSE</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">12 Jan, 09:15</td>
-                  <td className="py-[12px] border-b border-[#E8E7E4]">
-                    <span className="inline-block border border-[#6B6A67] text-[#6B6A67] bg-[#F7F7F6] rounded-[4px] p-[2px_8px] text-[10px]">Vu</span>
-                  </td>
-                </tr>
+              <tbody>
+                {activity.map((a, i) => (
+                  <tr key={i} style={{ borderBottom: '1px solid var(--border-light)' }}>
+                    <td className="py-3 px-3 text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>{a.partner}</td>
+                    <td className="py-3 px-3 text-[12px]" style={{ color: 'var(--text-secondary)' }}>{a.action} · {a.doc}</td>
+                    <td className="py-3 px-3 text-[12px]" style={{ color: 'var(--text-muted)' }}>Aujourd'hui</td>
+                    <td className="py-3 px-3">
+                      <span className={`badge ${a.statusClass}`}>{a.status}</span>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-
-          <Link href="/dashboard/activity" className="inline-block text-[12px] text-[#1A3A5C] mt-[16px] hover:underline">
-            Voir tout →
-          </Link>
         </div>
 
-        {/* COLONNE PETITE (34%) — Notifications */}
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px_24px]">
-          <h2 className="text-[14px] font-medium text-[#1A1A19] mb-[16px]">Notifications</h2>
-          
-          <ul className="flex flex-col">
-            <li className="flex items-start gap-[12px] py-[10px] border-b border-[#E8E7E4]">
-              <div className="w-[6px] h-[6px] rounded-full bg-[#1A3A5C] flex-shrink-0 mt-[6px]"></div>
-              <div>
-                <p className="text-[12px] text-[#1A1A19] leading-[1.5]">Nouveau document ajouté par <span className="font-medium">Société Alpha SA</span></p>
-                <span className="block text-[11px] text-[#6B6A67] mt-[2px]">Il y a 2 heures</span>
+        {/* Notifications (1/3) */}
+        <div className="rounded-[12px] p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <div className="text-[14px] font-medium mb-4" style={{ color: 'var(--text-primary)' }}>Notifications</div>
+          <div className="flex flex-col">
+            {notifications.map((n, i) => (
+              <div key={i} className="flex gap-3 py-3" style={{ borderBottom: i < notifications.length - 1 ? '1px solid var(--border-light)' : 'none' }}>
+                <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0" style={{ background: n.read ? 'var(--border)' : 'var(--gold)' }} />
+                <div>
+                  <div className="text-[12px] leading-[1.5]" style={{ color: n.read ? 'var(--text-secondary)' : 'var(--text-primary)' }}>{n.text}</div>
+                  <div className="text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>{n.time}</div>
+                </div>
               </div>
-            </li>
-            <li className="flex items-start gap-[12px] py-[10px] border-b border-[#E8E7E4]">
-              <div className="w-[6px] h-[6px] rounded-full bg-[#1A3A5C] flex-shrink-0 mt-[6px]"></div>
-              <div>
-                <p className="text-[12px] text-[#1A1A19] leading-[1.5]">Rappel : Validation du rapport d'inspection requise.</p>
-                <span className="block text-[11px] text-[#6B6A67] mt-[2px]">Aujourd'hui, 08:00</span>
-              </div>
-            </li>
-            <li className="flex items-start gap-[12px] py-[10px] border-b border-[#E8E7E4]">
-              <div className="w-[6px] h-[6px] rounded-full bg-[#E8E7E4] flex-shrink-0 mt-[6px]"></div>
-              <div>
-                <p className="text-[12px] text-[#1A1A19] leading-[1.5]">Paiement de la facture F-2026-004 reçu.</p>
-                <span className="block text-[11px] text-[#6B6A67] mt-[2px]">Hier, 14:20</span>
-              </div>
-            </li>
-            <li className="flex items-start gap-[12px] py-[10px] border-b border-[#E8E7E4]">
-              <div className="w-[6px] h-[6px] rounded-full bg-[#E8E7E4] flex-shrink-0 mt-[6px]"></div>
-              <div>
-                <p className="text-[12px] text-[#1A1A19] leading-[1.5]">Clôture du marché "Projet Delta" finalisée.</p>
-                <span className="block text-[11px] text-[#6B6A67] mt-[2px]">10 Jan, 16:45</span>
-              </div>
-            </li>
-          </ul>
-
-          <button className="text-[11px] text-[#6B6A67] mt-[12px] hover:text-[#1A1A19] transition-colors">
-            Tout marquer comme lu
-          </button>
+            ))}
+          </div>
         </div>
-
       </div>
 
       {/* ROW 3 — Partenaires récents */}
-      <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px_24px] mt-[20px]">
-        <div className="flex items-center justify-between border-b border-[#E8E7E4] pb-[16px]">
-          <h2 className="text-[14px] font-medium text-[#1A1A19]">Partenaires récents</h2>
-          <Link href="/dashboard/partners" className="text-[12px] text-[#1A3A5C] hover:underline">
-            Voir tous →
-          </Link>
+      <div className="rounded-[12px] p-5" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-[14px] font-medium" style={{ color: 'var(--text-primary)' }}>Partenaires récents</div>
+          <Link href="/dashboard/partners" className="text-[12px]" style={{ color: 'var(--gold)' }}>Voir tous →</Link>
         </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-[12px] mt-[16px]">
-          
-          {/* Carte partenaire 1 */}
-          <Link href="/dashboard/partners/1" className="block border border-[#E8E7E4] rounded-[8px] p-[16px] hover:border-[#1A3A5C] transition-colors duration-200">
-            <div className="w-[36px] h-[36px] rounded-full bg-[#F7F7F6] border border-[#E8E7E4] flex items-center justify-center text-[13px] font-medium text-[#1A3A5C]">
-              SA
-            </div>
-            <h3 className="text-[13px] font-medium text-[#1A1A19] mt-[10px]">Société Alpha SA</h3>
-            <div className="text-[11px] text-[#6B6A67] mt-[2px]">Fournisseur Matériel</div>
-            <span className="inline-block border border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE] rounded-[4px] p-[2px_8px] text-[10px] mt-[8px]">Actif</span>
-          </Link>
-
-          {/* Carte partenaire 2 */}
-          <Link href="/dashboard/partners/2" className="block border border-[#E8E7E4] rounded-[8px] p-[16px] hover:border-[#1A3A5C] transition-colors duration-200">
-            <div className="w-[36px] h-[36px] rounded-full bg-[#F7F7F6] border border-[#E8E7E4] flex items-center justify-center text-[13px] font-medium text-[#1A3A5C]">
-              EB
-            </div>
-            <h3 className="text-[13px] font-medium text-[#1A1A19] mt-[10px]">Entreprise Beta</h3>
-            <div className="text-[11px] text-[#6B6A67] mt-[2px]">Sous-traitant Génie Civil</div>
-            <span className="inline-block border border-[#8B4513] text-[#8B4513] bg-[#FEF3E2] rounded-[4px] p-[2px_8px] text-[10px] mt-[8px]">En cours</span>
-          </Link>
-
-          {/* Carte partenaire 3 */}
-          <Link href="/dashboard/partners/3" className="block border border-[#E8E7E4] rounded-[8px] p-[16px] hover:border-[#1A3A5C] transition-colors duration-200">
-            <div className="w-[36px] h-[36px] rounded-full bg-[#F7F7F6] border border-[#E8E7E4] flex items-center justify-center text-[13px] font-medium text-[#1A3A5C]">
-              CC
-            </div>
-            <h3 className="text-[13px] font-medium text-[#1A1A19] mt-[10px]">Construction & Co</h3>
-            <div className="text-[11px] text-[#6B6A67] mt-[2px]">Client / Institution</div>
-            <span className="inline-block border border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE] rounded-[4px] p-[2px_8px] text-[10px] mt-[8px]">Actif</span>
-          </Link>
-
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {recentPartners.map((p, i) => (
+            <Link key={i} href={`/dashboard/partners/${i + 1}`}
+              className="rounded-[8px] p-4 block transition-all"
+              style={{ border: '1px solid var(--border)', background: 'var(--bg-dash)' }}
+              onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--gold)')}
+              onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border)')}>
+              <div className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-medium mb-3"
+                style={{ background: 'var(--navy)', color: 'var(--gold)' }}>
+                {p.initials}
+              </div>
+              <div className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>{p.name}</div>
+              <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.type}</div>
+              <div className="flex items-center justify-between mt-3">
+                <span className="text-[11px]" style={{ color: 'var(--text-muted)' }}>{p.docs} docs</span>
+                <span className="badge badge-green">{p.status}</span>
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
 
