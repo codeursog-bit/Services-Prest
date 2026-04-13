@@ -1,3 +1,4 @@
+'use client';
 import Link from 'next/link';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -26,7 +27,7 @@ const values = [
 ];
 
 const team = [
-  { initials: 'ML', name: 'Mélanie L.', role: 'Directrice générale', bio: '15 ans d\'expérience dans la gestion de marchés industriels en Afrique centrale.' },
+  { initials: 'ML', name: 'Mélanie L.', role: 'Directrice générale', bio: "15 ans d'expérience dans la gestion de marchés industriels en Afrique centrale." },
   { initials: 'DP', name: 'D. Pierre', role: 'Responsable technique', bio: 'Expert en génie civil et hydrocarbures, supervision de chantiers complexes.' },
   { initials: 'AC', name: 'A. Christelle', role: 'Responsable QHSE', bio: 'Certification ISO 9001, pilotage des audits et de la conformité réglementaire.' },
 ];
@@ -37,7 +38,6 @@ export default function AboutPage() {
       <Header />
       <main style={{ minHeight: '100vh' }}>
 
-        {/* Bannière */}
         <section style={{ background: 'var(--navy)', paddingTop: 120, paddingBottom: 64 }} className="px-5">
           <div className="max-w-[1200px] mx-auto">
             <div className="text-[12px] mb-5" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -52,7 +52,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Mission & Vision */}
         <section className="px-5 py-[80px]" style={{ background: 'var(--bg-page)' }}>
           <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-16">
             <div>
@@ -76,7 +75,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Valeurs */}
         <section className="px-5 py-[80px]" style={{ background: 'var(--bg-surface)' }}>
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center mb-12">
@@ -99,7 +97,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* Équipe */}
         <section className="px-5 py-[80px]" style={{ background: 'var(--bg-page)' }}>
           <div className="max-w-[1200px] mx-auto">
             <div className="text-center mb-12">
@@ -122,7 +119,6 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* CTA */}
         <section className="px-5 py-[64px] text-center" style={{ background: 'var(--navy)' }}>
           <p className="section-tag mb-3">Melanie Services&Prest.</p>
           <h2 className="font-serif text-[26px] font-medium text-white mb-3">Votre partenaire idéal !</h2>

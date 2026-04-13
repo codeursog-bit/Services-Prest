@@ -1,142 +1,112 @@
-'use client';
-
-import { useState, useTransition } from 'react';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { createPartner } from '@/lib/actions/partners';
+import prisma from '@/lib/prisma';
 
-export default function NewPartnerPage() {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
+const TYPE_LABELS: Record<string, string> = {
+  CLIENT: 'Client', FOURNISSEUR: 'Fournisseur', SOUS_TRAITANT: 'Sous-traitant', PRESTATAIRE: 'Prestataire',
+};
+const STATUS_STYLES: Record<string, string> = {
+  ACTIF: 'badge-green', INACTIF: 'badge-red', EN_ATTENTE: 'badge-orange',
+};
+const STATUS_LABELS: Record<string, string> = {
+  ACTIF: 'Actif', INACTIF: 'Inactif', EN_ATTENTE: 'En attente',
+};
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    const formData = new FormData(e.currentTarget);
-    startTransition(async () => {
-      const result = await createPartner(formData);
-      if (result?.error) setError(result.error);
-    });
-  };
+export default async function PartnersPage() {
+  const partners = await prisma.partner.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: { _count: { select: { documents: true, invoices: true } } },
+  });
+
+  const totalActifs = partners.filter(p => p.status === 'ACTIF').length;
 
   return (
-    <DashboardLayout userInitials="ML" pageTitle="Nouveau partenaire">
-      <div className="max-w-[640px] mx-auto">
+    <DashboardLayout userInitials="ML" pageTitle="Partenaires">
 
-        <Link href="/dashboard/partners"
-          className="inline-block text-[12px] mb-8 transition-colors"
-          style={{ color: 'var(--text-muted)' }}>
-          ← Retour à la liste
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+        <p className="text-[13px]" style={{ color: 'var(--text-muted)' }}>
+          {partners.length} partenaire{partners.length !== 1 ? 's' : ''} · {totalActifs} actif{totalActifs !== 1 ? 's' : ''}
+        </p>
+        <Link href="/dashboard/partners/new"
+          className="inline-flex items-center gap-2 py-2 px-4 rounded-[6px] text-[13px] font-medium"
+          style={{ background: 'var(--navy)', color: '#FFFFFF' }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Nouveau partenaire
         </Link>
-
-        {error && (
-          <div className="mb-5 rounded-[6px] p-3" style={{ background: 'var(--red-bg)', border: '1px solid var(--red)' }}>
-            <span className="text-[13px]" style={{ color: 'var(--red)' }}>{error}</span>
-          </div>
-        )}
-
-        <div className="rounded-[10px] p-6 sm:p-8" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-          <h2 className="text-[18px] font-medium mb-6" style={{ color: 'var(--text-primary)' }}>
-            Informations du partenaire
-          </h2>
-          <div className="h-px w-full mb-6" style={{ background: 'var(--border)' }} />
-
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Nom de l&apos;organisation *</label>
-                <input type="text" name="orgName" required className="dash-input" />
-              </div>
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Nom du contact principal *</label>
-                <input type="text" name="contactName" required className="dash-input" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Email du contact *</label>
-                <input type="email" name="email" required className="dash-input" />
-              </div>
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Téléphone</label>
-                <input type="tel" name="phone" className="dash-input" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Type de partenaire *</label>
-                <select name="type" required className="dash-input">
-                  <option value="">Sélectionnez un type</option>
-                  <option value="Client">Client</option>
-                  <option value="Fournisseur">Fournisseur</option>
-                  <option value="Sous-traitant">Sous-traitant</option>
-                  <option value="Prestataire">Prestataire</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Secteur d&apos;activité</label>
-                <select name="sector" className="dash-input">
-                  <option value="">Sélectionnez un secteur</option>
-                  <option value="Génie civil">Génie civil</option>
-                  <option value="Hydrocarbures & gaz">Hydrocarbures & gaz</option>
-                  <option value="QHSE">QHSE</option>
-                  <option value="Matériel industriel">Matériel industriel</option>
-                  <option value="Placement personnel">Placement personnel</option>
-                  <option value="Hébergement">Hébergement</option>
-                  <option value="Transport">Transport</option>
-                  <option value="Autre">Autre</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Adresse / Localisation</label>
-              <input type="text" name="address" className="dash-input" />
-            </div>
-
-            <div className="mb-8">
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: 'var(--text-primary)' }}>Notes internes (non visibles par le partenaire)</label>
-              <textarea name="notes" rows={3} className="dash-input resize-y" />
-            </div>
-
-            <div className="h-px w-full mb-6" style={{ background: 'var(--border)' }} />
-
-            <div className="mb-8">
-              <h3 className="text-[14px] font-medium mb-4" style={{ color: 'var(--text-primary)' }}>Paramètres de notification</h3>
-              <div className="flex flex-col gap-3">
-                {[
-                  { name: 'notifyPartner', label: 'Notifier le partenaire par email lors de chaque nouveau document partagé', checked: true },
-                  { name: 'notifyAdmin',   label: "Envoyer une copie des notifications à l'admin", checked: true },
-                ].map(item => (
-                  <label key={item.name} className="flex items-center gap-3 cursor-pointer">
-                    <div className="relative flex-shrink-0">
-                      <input type="checkbox" name={item.name} defaultChecked={item.checked} className="peer sr-only" />
-                      <div className="w-9 h-5 rounded-full transition-colors duration-200 peer-checked:bg-[var(--navy)] bg-[var(--border)]" />
-                      <div className="absolute left-[2px] top-[2px] w-4 h-4 rounded-full bg-white transition-transform duration-200 peer-checked:translate-x-4" />
-                    </div>
-                    <span className="text-[13px]" style={{ color: 'var(--text-primary)' }}>{item.label}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <Link href="/dashboard/partners"
-                className="py-2.5 px-4 rounded-[6px] text-[13px] font-medium transition-colors"
-                style={{ background: 'var(--bg-surface)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
-                Annuler
-              </Link>
-              <button type="submit" disabled={isPending}
-                className="py-2.5 px-4 rounded-[6px] text-[13px] font-medium transition-colors disabled:opacity-70"
-                style={{ background: 'var(--navy)', color: '#FFFFFF' }}>
-                {isPending ? 'Création en cours...' : "Créer l'espace partenaire"}
-              </button>
-            </div>
-          </form>
-        </div>
       </div>
+
+      {partners.length === 0 ? (
+        <div className="rounded-[12px] p-16 text-center" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <p className="text-[14px] font-medium mb-2" style={{ color: 'var(--text-primary)' }}>Aucun partenaire</p>
+          <p className="text-[13px] mb-6" style={{ color: 'var(--text-muted)' }}>Créez votre premier partenaire pour commencer le suivi.</p>
+          <Link href="/dashboard/partners/new"
+            className="inline-flex items-center gap-2 py-2 px-5 rounded-[6px] text-[13px] font-medium"
+            style={{ background: 'var(--navy)', color: '#FFFFFF' }}>
+            Créer un partenaire
+          </Link>
+        </div>
+      ) : (
+        <div className="rounded-[12px] overflow-hidden" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr style={{ background: 'var(--bg-dash)', borderBottom: '1px solid var(--border)' }}>
+                  {['Organisation', 'Contact', 'Type', 'Docs', 'Factures', 'Statut', ''].map(h => (
+                    <th key={h} className="text-left text-[11px] font-medium py-3 px-4" style={{ color: 'var(--text-muted)' }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {partners.map(p => (
+                  <tr key={p.id} className="dash-table-row" style={{ borderBottom: '1px solid var(--border-light)' }}>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-medium flex-shrink-0"
+                          style={{ background: 'var(--navy)', color: 'var(--gold)' }}>
+                          {p.orgName.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <Link href={`/dashboard/partners/${p.id}`}
+                            className="text-[13px] font-medium hover:underline block" style={{ color: 'var(--text-primary)' }}>
+                            {p.orgName}
+                          </Link>
+                          {p.sector && <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.sector}</div>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="text-[12px]" style={{ color: 'var(--text-secondary)' }}>{p.contactName}</div>
+                      <div className="text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.email}</div>
+                    </td>
+                    <td className="py-3 px-4 text-[12px]" style={{ color: 'var(--text-secondary)' }}>
+                      {TYPE_LABELS[p.type] ?? p.type}
+                    </td>
+                    <td className="py-3 px-4 text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                      {p._count.documents}
+                    </td>
+                    <td className="py-3 px-4 text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>
+                      {p._count.invoices}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`badge ${STATUS_STYLES[p.status] ?? 'badge-gray'}`}>
+                        {STATUS_LABELS[p.status] ?? p.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <Link href={`/dashboard/partners/${p.id}`}
+                        className="text-[12px] hover:underline" style={{ color: 'var(--gold)' }}>
+                        Ouvrir →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
