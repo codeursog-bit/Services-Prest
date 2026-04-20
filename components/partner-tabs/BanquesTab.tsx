@@ -1,229 +1,274 @@
 'use client';
 
 import { useState, useEffect, useTransition } from 'react';
-import { createInvoice, updateInvoiceStatus, deleteInvoice } from '@/lib/actions/invoices';
-
-interface BanquesTabProps {
-  partnerId: string;
-}
+import { formatDate, formatDateShort, formatAmount, isOverdue } from '@/lib/utils';
 
 interface Invoice {
-  id: string;
-  ref: string;
-  description: string;
-  amount: number;
-  issueDate: string | Date;
-  dueDate?: string | Date | null;
-  status: string;
-  notes?: string | null;
-  fileUrl?: string | null;
+  id: string; ref: string; description: string; amount: number;
+  issueDate: string; dueDate: string | null; status: string;
+  notes: string | null; fileUrl: string | null; reminderSentAt: string | null;
 }
 
-export default function BanquesTab({ partnerId, initialInvoices = [] }: BanquesTabProps & { initialInvoices?: any[] }) {
-  const [invoices, setInvoices] = useState<Invoice[]>(initialInvoices);
-  const [filter, setFilter] = useState('Tous');
-  const [showForm, setShowForm] = useState(false);
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+const STATUS_CFG: Record<string, { label: string; cls: string }> = {
+  NON_SOLDE: { label: 'Non soldé', cls: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]' },
+  EN_COURS:  { label: 'En cours',  cls: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]' },
+  PAYE:      { label: 'Payé',      cls: 'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]' },
+};
 
-  const filters = ['Tous', 'PAYE', 'EN_COURS', 'NON_SOLDE'];
-  const filterLabels: Record<string, string> = { Tous: 'Tous', PAYE: 'Payé', EN_COURS: 'En cours', NON_SOLDE: 'Non soldé' };
+export default function BanquesTab({ partnerId }: { partnerId: string }) {
+  const [invoices, setInvoices]   = useState<Invoice[]>([]);
+  const [loading, setLoading]     = useState(true);
+  const [showForm, setShowForm]   = useState(false);
+  const [editInv, setEditInv]     = useState<Invoice | null>(null);
+  const [filter, setFilter]       = useState('Tous');
+  const [error, setError]         = useState('');
+  const [success, setSuccess]     = useState('');
+  const [isPending, startT]       = useTransition();
 
-  useEffect(() => {
+  const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[13px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
+  const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[5px]";
+
+  const load = () => {
     fetch(`/api/invoices?partnerId=${partnerId}`)
       .then(r => r.json())
-      .then(data => { if (data.invoices) setInvoices(data.invoices); })
-      .catch(() => {});
-  }, [partnerId]);
-
-  const showFeedback = (msg: string, isError = false) => {
-    if (isError) { setError(msg); setTimeout(() => setError(''), 4000); }
-    else { setSuccess(msg); setTimeout(() => setSuccess(''), 4000); }
+      .then(d => { setInvoices(d.invoices || []); setLoading(false); });
   };
 
-  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
+  useEffect(() => { load(); }, [partnerId]);
+
+  const fb = (msg: string, ok = true) => {
+    if (ok) { setSuccess(msg); setTimeout(() => setSuccess(''), 3500); }
+    else    { setError(msg);   setTimeout(() => setError(''), 4000); }
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    fd.append('partnerId', partnerId);
-    const form = e.currentTarget;
-    startTransition(async () => {
-      const res = await createInvoice(fd);
-      if (res.success) {
-        showFeedback('Facture créée.');
-        form.reset();
-        setShowForm(false);
-        fetch(`/api/invoices?partnerId=${partnerId}`)
-          .then(r => r.json()).then(data => { if (data.invoices) setInvoices(data.invoices); });
-      } else showFeedback(res.error || 'Erreur.', true);
+    const fd   = new FormData(e.currentTarget);
+    const body = {
+      ref:         fd.get('ref')         as string,
+      description: fd.get('description') as string,
+      amount:      Number(fd.get('amount')),
+      issueDate:   fd.get('issueDate')   as string,
+      dueDate:     fd.get('dueDate')     as string || null,
+      status:      fd.get('status')      as string,
+      notes:       fd.get('notes')       as string || null,
+      partnerId,
+    };
+
+    setError('');
+    startT(async () => {
+      const url    = editInv ? `/api/invoices/${editInv.id}` : '/api/invoices';
+      const method = editInv ? 'PUT' : 'POST';
+      const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data   = await res.json();
+      if (!data.success) { fb(data.error || 'Erreur.', false); return; }
+      fb(editInv ? 'Facture modifiée.' : 'Facture créée.');
+      setShowForm(false); setEditInv(null);
+      (e.target as HTMLFormElement).reset(); load();
     });
   };
 
   const handleStatusChange = (id: string, status: string) => {
-    startTransition(async () => {
-      await updateInvoiceStatus(id, status, partnerId);
-      setInvoices(prev => prev.map(inv => inv.id === id ? { ...inv, status } : inv));
+    startT(async () => {
+      await fetch(`/api/invoices/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }) });
+      load();
     });
   };
 
-  const handleDelete = (id: string) => {
-    if (!confirm('Supprimer cette facture ?')) return;
-    startTransition(async () => {
-      await deleteInvoice(id, partnerId);
-      setInvoices(prev => prev.filter(inv => inv.id !== id));
+  const handleDelete = (id: string, ref: string) => {
+    if (!confirm(`Supprimer la facture "${ref}" ?`)) return;
+    startT(async () => {
+      await fetch(`/api/invoices/${id}`, { method: 'DELETE' });
+      setInvoices(prev => prev.filter(i => i.id !== id)); load();
     });
   };
 
-  const filtered = filter === 'Tous' ? invoices : invoices.filter(inv => inv.status === filter);
-
-  const totalFacture = invoices.reduce((s, i) => s + i.amount, 0);
-  const totalPaye = invoices.filter(i => i.status === 'PAYE').reduce((s, i) => s + i.amount, 0);
-  const totalEnCours = invoices.filter(i => i.status === 'EN_COURS').reduce((s, i) => s + i.amount, 0);
-  const totalNonSolde = invoices.filter(i => i.status === 'NON_SOLDE').reduce((s, i) => s + i.amount, 0);
-
-  const formatAmount = (n: number) => n.toLocaleString('fr-FR');
-  const formatDate = (d: string | Date | null | undefined) =>
-    d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '—';
-
-  const statusColors: Record<string, string> = {
-    PAYE: 'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]',
-    EN_COURS: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]',
-    NON_SOLDE: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]',
+  const handleReminder = (id: string, ref: string) => {
+    if (!confirm(`Envoyer une relance pour "${ref}" ?`)) return;
+    startT(async () => {
+      const res  = await fetch(`/api/invoices/${id}/reminder`, { method: 'POST' });
+      const data = await res.json();
+      if (data.success) fb('Relance envoyée.');
+      else fb(data.error || 'Erreur.', false);
+    });
   };
-  const statusLabel: Record<string, string> = { PAYE: 'Payé', EN_COURS: 'En cours', NON_SOLDE: 'Non soldé' };
 
-  const inputClass = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C]";
-  const labelClass = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+  const toDateInput = (d: string | null) => d ? new Date(d).toISOString().split('T')[0] : '';
+
+  const filtered     = filter === 'Tous' ? invoices : invoices.filter(i => i.status === filter);
+  const total        = invoices.reduce((s, i) => s + i.amount, 0);
+  const totalPaye    = invoices.filter(i => i.status === 'PAYE').reduce((s, i) => s + i.amount, 0);
+  const nonSolde     = invoices.filter(i => i.status !== 'PAYE').reduce((s, i) => s + i.amount, 0);
 
   return (
     <div>
-      {success && <div className="mb-[16px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[10px_14px] text-[13px] text-[#2D6A4F]">{success}</div>}
-      {error && <div className="mb-[16px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[10px_14px] text-[13px] text-[#9B2335]">{error}</div>}
-
       {/* MÉTRIQUES */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-[12px] mb-[24px]">
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[16px_20px]">
-          <div className="text-[20px] font-medium text-[#1A1A19]">{formatAmount(totalFacture)} <span className="text-[12px] font-normal text-[#6B6A67]">FCFA</span></div>
-          <div className="text-[12px] text-[#6B6A67] mt-[4px]">Total facturé</div>
-        </div>
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[16px_20px]">
-          <div className="text-[20px] font-medium text-[#2D6A4F]">{formatAmount(totalPaye)} <span className="text-[12px] font-normal text-[#6B6A67]">FCFA</span></div>
-          <div className="text-[12px] text-[#6B6A67] mt-[4px]">Montant payé</div>
-        </div>
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[16px_20px]">
-          <div className="text-[20px] font-medium text-[#8B4513]">{formatAmount(totalEnCours)} <span className="text-[12px] font-normal text-[#6B6A67]">FCFA</span></div>
-          <div className="text-[12px] text-[#6B6A67] mt-[4px]">En cours</div>
-        </div>
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[16px_20px]">
-          <div className="text-[20px] font-medium text-[#9B2335]">{formatAmount(totalNonSolde)} <span className="text-[12px] font-normal text-[#6B6A67]">FCFA</span></div>
-          <div className="text-[12px] text-[#6B6A67] mt-[4px]">Non soldé</div>
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-[10px] mb-[20px]">
+        {[
+          { label: 'Total facturé',  val: formatAmount(total),     color: 'text-[#1A1A19]' },
+          { label: 'Encaissé',       val: formatAmount(totalPaye), color: 'text-[#2D6A4F]' },
+          { label: 'En attente',     val: formatAmount(nonSolde),  color: nonSolde > 0 ? 'text-[#8B4513]' : 'text-[#1A1A19]' },
+          { label: 'Factures',       val: invoices.length,         color: 'text-[#1A1A19]' },
+        ].map(k => (
+          <div key={k.label} className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[14px_16px]">
+            <div className={`text-[18px] font-medium ${k.color}`}>{k.val}</div>
+            <div className="text-[12px] text-[#6B6A67] mt-[3px]">{k.label}</div>
+          </div>
+        ))}
       </div>
 
-      {/* BARRE D'ACTION */}
-      <div className="flex justify-between items-center mb-[16px]">
-        <div className="flex gap-[6px]">
-          {filters.map(f => (
+      {/* FEEDBACK */}
+      {success && <div className="mb-[12px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[10px] text-[13px] text-[#2D6A4F]">{success}</div>}
+      {error   && <div className="mb-[12px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[10px] text-[13px] text-[#9B2335]">{error}</div>}
+
+      {/* BARRE */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[10px] mb-[16px]">
+        <div className="flex gap-[6px] flex-wrap">
+          {['Tous', 'NON_SOLDE', 'EN_COURS', 'PAYE'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`py-[6px] px-[12px] rounded-[6px] text-[12px] border transition-colors ${filter === f ? 'bg-[#1A3A5C] border-[#1A3A5C] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#E8E7E4] text-[#6B6A67] hover:border-[#1A3A5C]'}`}>
-              {filterLabels[f]}
+              className={`py-[5px] px-[10px] rounded-[6px] text-[12px] border transition-colors ${
+                filter === f ? 'bg-[#1A3A5C] border-[#1A3A5C] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#E8E7E4] text-[#6B6A67] hover:border-[#1A3A5C]'
+              }`}>
+              {f === 'Tous' ? 'Toutes' : STATUS_CFG[f]?.label}
             </button>
           ))}
         </div>
-        <button onClick={() => setShowForm(!showForm)}
-          className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] transition-colors">
-          {showForm ? 'Annuler' : 'Ajouter une facture'}
+        <button onClick={() => { setShowForm(!showForm); setEditInv(null); }}
+          className="flex-shrink-0 bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[14px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] transition-colors">
+          {showForm ? 'Annuler' : '+ Nouvelle facture'}
         </button>
       </div>
 
       {/* FORMULAIRE */}
-      {showForm && (
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[28px] mb-[20px]">
-          <form onSubmit={handleCreate} className="flex flex-col gap-[16px]">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
-              <div><label className={labelClass}>Référence *</label><input type="text" name="ref" placeholder="FAC-2026-001" required className={inputClass} /></div>
-              <div><label className={labelClass}>Description *</label><input type="text" name="description" placeholder="Prestation technique" required className={inputClass} /></div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px]">
+      {(showForm || editInv) && (
+        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px] mb-[20px]">
+          <h3 className="text-[14px] font-medium text-[#1A1A19] mb-[16px]">{editInv ? `Modifier ${editInv.ref}` : 'Nouvelle facture'}</h3>
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
               <div>
-                <label className={labelClass}>Montant *</label>
-                <div className="flex">
-                  <input type="number" name="amount" required className={`${inputClass} rounded-r-none border-r-0`} />
-                  <span className="bg-[#F7F7F6] border border-[#E8E7E4] border-l-0 rounded-r-[6px] px-[12px] flex items-center text-[13px] text-[#6B6A67]">FCFA</span>
-                </div>
+                <label className={lc}>Référence *</label>
+                <input type="text" name="ref" required defaultValue={editInv?.ref || ''}
+                  placeholder="FAC-2026-001" className={ic} disabled={!!editInv} />
               </div>
-              <div><label className={labelClass}>Date d&apos;émission *</label><input type="date" name="issueDate" required className={inputClass} /></div>
-              <div><label className={labelClass}>Date d&apos;échéance</label><input type="date" name="dueDate" className={inputClass} /></div>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
               <div>
-                <label className={labelClass}>Statut *</label>
-                <select name="status" className={inputClass}>
+                <label className={lc}>Montant (FCFA) *</label>
+                <input type="number" name="amount" required min="1" defaultValue={editInv?.amount || ''} className={ic} />
+              </div>
+              <div className="md:col-span-2">
+                <label className={lc}>Description *</label>
+                <input type="text" name="description" required defaultValue={editInv?.description || ''}
+                  placeholder="Ex: Prestation technique — Janvier 2026" className={ic} />
+              </div>
+              <div>
+                <label className={lc}>Date d&apos;émission *</label>
+                <input type="date" name="issueDate" required defaultValue={toDateInput(editInv?.issueDate || null)} className={ic} />
+              </div>
+              <div>
+                <label className={lc}>Date d&apos;échéance</label>
+                <input type="date" name="dueDate" defaultValue={toDateInput(editInv?.dueDate || null)} className={ic} />
+              </div>
+              <div>
+                <label className={lc}>Statut *</label>
+                <select name="status" defaultValue={editInv?.status || 'NON_SOLDE'} className={ic}>
                   <option value="NON_SOLDE">Non soldé</option>
                   <option value="EN_COURS">En cours de paiement</option>
                   <option value="PAYE">Payé</option>
                 </select>
               </div>
-              <div><label className={labelClass}>Notes</label><input type="text" name="notes" className={inputClass} /></div>
+              <div>
+                <label className={lc}>Notes</label>
+                <input type="text" name="notes" defaultValue={editInv?.notes || ''}
+                  placeholder="Virement initié le…" className={ic} />
+              </div>
             </div>
-            <div className="flex justify-end gap-[12px]">
-              <button type="button" onClick={() => setShowForm(false)} className="border border-[#E8E7E4] bg-[#FFFFFF] py-[8px] px-[16px] rounded-[6px] text-[13px] font-medium text-[#1A1A19]">Annuler</button>
-              <button type="submit" disabled={isPending} className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] disabled:opacity-60">
-                {isPending ? 'Enregistrement…' : 'Enregistrer'}
+            <div className="flex gap-[10px] justify-end">
+              <button type="button" onClick={() => { setShowForm(false); setEditInv(null); }}
+                className="border border-[#E8E7E4] text-[#1A1A19] py-[8px] px-[12px] rounded-[6px] text-[12px] hover:bg-[#F7F7F6]">Annuler</button>
+              <button type="submit" disabled={isPending}
+                className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[14px] rounded-[6px] text-[12px] font-medium hover:bg-[#142d4a] disabled:opacity-60">
+                {isPending ? 'Enregistrement…' : editInv ? 'Modifier' : 'Créer'}
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* TABLEAU FACTURES */}
+      {/* TABLEAU */}
       <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] overflow-hidden">
-        {filtered.length === 0 ? (
-          <div className="p-[32px] text-center text-[13px] text-[#6B6A67]">Aucune facture{filter !== 'Tous' ? ` avec le statut "${filterLabels[filter]}"` : ''}.</div>
+        {loading ? (
+          <div className="p-[32px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+        ) : filtered.length === 0 ? (
+          <div className="p-[32px] text-center text-[13px] text-[#6B6A67]">Aucune facture.</div>
         ) : (
           <table className="w-full text-left">
             <thead className="bg-[#F7F7F6] border-b border-[#E8E7E4]">
               <tr>
-                <th className="py-[12px] px-[20px] text-[12px] font-medium text-[#6B6A67]">Référence</th>
-                <th className="py-[12px] px-[20px] text-[12px] font-medium text-[#6B6A67]">Description</th>
-                <th className="py-[12px] px-[20px] text-[12px] font-medium text-[#6B6A67]">Montant</th>
-                <th className="py-[12px] px-[20px] text-[12px] font-medium text-[#6B6A67]">Dates</th>
-                <th className="py-[12px] px-[20px] text-[12px] font-medium text-[#6B6A67]">Statut</th>
-                <th className="py-[12px] px-[20px] text-[12px] font-medium text-[#6B6A67] text-right">Actions</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Référence</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Description</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67] text-right">Montant</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Dates</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Statut</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67] text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map(inv => (
-                <tr key={inv.id} className="border-b border-[#E8E7E4] hover:bg-[#F7F7F6]">
-                  <td className="py-[14px] px-[20px] text-[13px] font-medium text-[#1A1A19]">{inv.ref}</td>
-                  <td className="py-[14px] px-[20px] text-[12px] text-[#6B6A67] max-w-[150px] truncate">{inv.description}</td>
-                  <td className="py-[14px] px-[20px]"><span className="text-[13px] font-medium text-[#1A1A19]">{formatAmount(inv.amount)}</span> <span className="text-[12px] text-[#6B6A67]">FCFA</span></td>
-                  <td className="py-[14px] px-[20px]">
-                    <div className="text-[12px] text-[#6B6A67]">Émis : {formatDate(inv.issueDate)}</div>
-                    {inv.dueDate && <div className="text-[12px] text-[#9B2335] mt-[2px]">Éch. : {formatDate(inv.dueDate)}</div>}
-                  </td>
-                  <td className="py-[14px] px-[20px]">
-                    <select value={inv.status} onChange={e => handleStatusChange(inv.id, e.target.value)}
-                      className={`inline-block border rounded-[4px] py-[2px] px-[8px] text-[12px] cursor-pointer focus:outline-none ${statusColors[inv.status]}`}>
-                      <option value="NON_SOLDE">Non soldé</option>
-                      <option value="EN_COURS">En cours</option>
-                      <option value="PAYE">Payé</option>
-                    </select>
-                  </td>
-                  <td className="py-[14px] px-[20px] text-right">
-                    <div className="flex gap-[8px] justify-end">
-                      {inv.fileUrl && <a href={inv.fileUrl} target="_blank" rel="noreferrer" className="text-[12px] text-[#1A3A5C] hover:underline">Voir PDF</a>}
-                      <button onClick={() => handleDelete(inv.id)} disabled={isPending} className="text-[12px] text-[#9B2335] hover:underline disabled:opacity-50">Supprimer</button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {filtered.map(inv => {
+                const late = inv.dueDate && isOverdue(inv.dueDate) && inv.status !== 'PAYE';
+                const cfg  = STATUS_CFG[inv.status] || STATUS_CFG.NON_SOLDE;
+                return (
+                  <tr key={inv.id} className="border-b border-[#E8E7E4] hover:bg-[#F7F7F6]">
+                    <td className="py-[12px] px-[16px]">
+                      <span className="text-[13px] font-medium text-[#1A1A19]">{inv.ref}</span>
+                    </td>
+                    <td className="py-[12px] px-[16px]">
+                      <span className="text-[12px] text-[#1A1A19] block truncate max-w-[160px]">{inv.description}</span>
+                      {inv.notes && <span className="text-[11px] text-[#8B4513] italic block mt-[1px]">{inv.notes}</span>}
+                    </td>
+                    <td className="py-[12px] px-[16px] text-right">
+                      <span className="text-[13px] font-medium text-[#1A1A19]">{formatAmount(inv.amount)}</span>
+                      <span className="text-[11px] text-[#6B6A67] ml-[2px]">FCFA</span>
+                    </td>
+                    <td className="py-[12px] px-[16px]">
+                      <div className="text-[12px] text-[#6B6A67]">{formatDateShort(inv.issueDate)}</div>
+                      {inv.dueDate && (
+                        <div className={`text-[11px] mt-[1px] ${late ? 'text-[#9B2335] font-medium' : 'text-[#6B6A67]'}`}>
+                          Éch. {formatDateShort(inv.dueDate)} {late ? '⚠' : ''}
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-[12px] px-[16px]">
+                      <select value={inv.status}
+                        onChange={e => handleStatusChange(inv.id, e.target.value)}
+                        disabled={isPending}
+                        className={`border rounded-[4px] py-[2px] px-[6px] text-[11px] cursor-pointer focus:outline-none disabled:opacity-50 ${cfg.cls}`}>
+                        <option value="NON_SOLDE">Non soldé</option>
+                        <option value="EN_COURS">En cours</option>
+                        <option value="PAYE">Payé</option>
+                      </select>
+                    </td>
+                    <td className="py-[12px] px-[16px] text-right">
+                      <div className="flex gap-[8px] justify-end">
+                        {late && (
+                          <button onClick={() => handleReminder(inv.id, inv.ref)} disabled={isPending}
+                            className="text-[11px] text-[#9B2335] hover:underline disabled:opacity-50">Relancer</button>
+                        )}
+                        <button onClick={() => { setEditInv(inv); setShowForm(false); }} disabled={isPending}
+                          className="text-[12px] text-[#6B6A67] hover:underline disabled:opacity-50">Modifier</button>
+                        <button onClick={() => handleDelete(inv.id, inv.ref)} disabled={isPending}
+                          className="text-[12px] text-[#9B2335] hover:underline disabled:opacity-50">Supprimer</button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
             <tfoot className="bg-[#F7F7F6]">
               <tr>
-                <td className="py-[14px] px-[20px] text-[13px] font-medium text-[#1A1A19]">Total</td>
-                <td></td>
-                <td className="py-[14px] px-[20px] text-[13px] font-medium text-[#1A1A19]">{formatAmount(filtered.reduce((s, i) => s + i.amount, 0))} <span className="text-[12px] text-[#6B6A67] font-normal">FCFA</span></td>
+                <td colSpan={2} className="py-[10px] px-[16px] text-[12px] font-medium text-[#1A1A19]">Total</td>
+                <td className="py-[10px] px-[16px] text-right">
+                  <span className="text-[13px] font-medium text-[#1A1A19]">{formatAmount(filtered.reduce((s, i) => s + i.amount, 0))}</span>
+                  <span className="text-[11px] text-[#6B6A67] ml-[2px]">FCFA</span>
+                </td>
                 <td colSpan={3}></td>
               </tr>
             </tfoot>

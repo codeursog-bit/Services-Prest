@@ -1,258 +1,206 @@
 'use client';
 
-import { useState, useTransition } from 'react';
-import {
-  upsertMarcheNote,
-  updateExecutionLevel,
-  createContentieux,
-  updateContentieux,
-  deleteContentieux,
-} from '@/lib/actions/marche';
+import { useState, useEffect, useTransition } from 'react';
+import Link from 'next/link';
+import { formatDateShort, formatDate } from '@/lib/utils';
 
-interface Market { id: string; name: string; phase: string; nextStep?: string | null; executionRate: number; nextReviewDate?: string | null; closingDate?: string | null; updatedAt: string; }
-interface MarketNote { id: string; category: string; notes: string; participants?: string | null; date: string; }
-interface Contentieux { id: string; subject: string; description?: string | null; openDate: string; status: string; }
-
-interface Props {
-  partnerId: string;
-  initialMarkets?: Market[];
-  initialNotes?: MarketNote[];
-  initialContentieux?: Contentieux[];
+interface Market {
+  id:            string;
+  name:          string;
+  status:        string;
+  executionRate: number;
+  startDate:     string | null;
+  endDate:       string | null;
+  steps:         { status: string; endDate: string }[];
+  _count:        { notes: number; contentieux: number };
 }
 
-export default function MarcheTab({ partnerId, initialMarkets = [], initialNotes = [], initialContentieux = [] }: Props) {
-  const [subTab, setSubTab] = useState("Niveau d'exécution");
-  const [isPending, startTransition] = useTransition();
-  const [success, setSuccess] = useState('');
-  const [error, setError] = useState('');
+const STATUS_CFG: Record<string, { label: string; cls: string }> = {
+  EN_COURS:    { label: 'En cours',    cls: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]' },
+  SUSPENDU:    { label: 'Suspendu',    cls: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]' },
+  CLOTURE:     { label: 'Clôturé',     cls: 'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]' },
+  CONTENTIEUX: { label: 'Contentieux', cls: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]' },
+};
 
-  const market = initialMarkets[0] ?? null;
-  const [marketNotes, setMarketNotes] = useState<MarketNote[]>(initialNotes);
-  const [contentieuxList, setContentieuxList] = useState<Contentieux[]>(initialContentieux);
+export default function MarcheTab({ partnerId }: { partnerId: string }) {
+  const [markets, setMarkets]   = useState<Market[]>([]);
+  const [loading, setLoading]   = useState(true);
+  const [isPending, startT]     = useTransition();
+  const [showForm, setShowForm] = useState(false);
+  const [error, setError]       = useState('');
+  const [success, setSuccess]   = useState('');
 
-  const [execRate, setExecRate] = useState(market?.executionRate ?? 0);
-  const [phase, setPhase] = useState(market?.phase ?? '');
-  const [nextStep, setNextStep] = useState(market?.nextStep ?? '');
-  const [closingDate, setClosingDate] = useState(market?.closingDate ? new Date(market.closingDate).toISOString().split('T')[0] : '');
+  const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[13px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
+  const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
 
-  const tabs = ["Audit", "Comptes rendus", "Contentieux", "Niveau d'exécution", "Autres"];
-  const inputClass = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C]";
-  const labelClass = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+  useEffect(() => {
+    fetch(`/api/marche?partnerId=${partnerId}`)
+      .then(r => r.json())
+      .then(d => { setMarkets(d.markets || []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [partnerId]);
 
-  const showFeedback = (msg: string, isError = false) => {
-    if (isError) { setError(msg); setTimeout(() => setError(''), 4000); }
-    else { setSuccess(msg); setTimeout(() => setSuccess(''), 4000); }
+  const reload = () => {
+    fetch(`/api/marche?partnerId=${partnerId}`)
+      .then(r => r.json())
+      .then(d => setMarkets(d.markets || []));
   };
 
-  const refreshNotes = async () => {
-    const res = await fetch(`/api/marche?partnerId=${partnerId}`);
-    const data = await res.json();
-    if (data.notes) setMarketNotes(data.notes);
-    if (data.contentieux) setContentieuxList(data.contentieux);
-  };
-
-  const handleUpdateExecution = () => {
-    startTransition(async () => {
-      const res = await updateExecutionLevel(partnerId, execRate, phase, nextStep, closingDate);
-      if (res.success) showFeedback("Niveau d'exécution mis à jour.");
-      else showFeedback(res.error || 'Erreur.', true);
-    });
-  };
-
-  const handleSaveNote = async (e: React.FormEvent<HTMLFormElement>, category: string) => {
+  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const form = e.currentTarget;
-    startTransition(async () => {
-      const res = await upsertMarcheNote(partnerId, category, fd.get('notes') as string, {
-        date: fd.get('date') as string,
-        participants: fd.get('participants') as string,
+    const fd   = new FormData(e.currentTarget);
+    const body = {
+      partnerId,
+      name:      fd.get('name')      as string,
+      description: fd.get('description') as string,
+      startDate: fd.get('startDate') as string,
+      endDate:   fd.get('endDate')   as string,
+      status:    'EN_COURS',
+    };
+
+    if (!body.name) { setError('Nom requis.'); return; }
+    setError('');
+
+    startT(async () => {
+      const res  = await fetch('/api/marche', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
       });
-      if (res.success) { showFeedback('Note enregistrée.'); form.reset(); await refreshNotes(); }
-      else showFeedback(res.error || 'Erreur.', true);
+      const data = await res.json();
+      if (!data.success) { setError(data.error || 'Erreur.'); return; }
+      setSuccess('Marché créé.'); setShowForm(false);
+      (e.target as HTMLFormElement).reset();
+      reload();
+      setTimeout(() => setSuccess(''), 3000);
     });
   };
 
-  const handleCreateContentieux = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const form = e.currentTarget;
-    startTransition(async () => {
-      const res = await createContentieux(partnerId, {
-        subject: fd.get('subject') as string,
-        description: fd.get('description') as string,
-        openDate: fd.get('openDate') as string,
-        status: fd.get('status') as string,
-      });
-      if (res.success) { showFeedback('Contentieux enregistré.'); form.reset(); await refreshNotes(); }
-      else showFeedback(res.error || 'Erreur.', true);
+  const handleDelete = (id: string, name: string) => {
+    if (!confirm(`Supprimer le marché "${name}" ?`)) return;
+    startT(async () => {
+      await fetch(`/api/marche/${id}`, { method: 'DELETE' });
+      setMarkets(prev => prev.filter(m => m.id !== id));
     });
   };
-
-  const handleUpdateContentieux = (id: string, status: string) => {
-    startTransition(async () => {
-      await updateContentieux(id, status);
-      setContentieuxList(prev => prev.map(c => c.id === id ? { ...c, status } : c));
-    });
-  };
-
-  const handleDeleteContentieux = (id: string) => {
-    if (!confirm('Supprimer ce contentieux ?')) return;
-    startTransition(async () => {
-      await deleteContentieux(id, partnerId);
-      setContentieuxList(prev => prev.filter(c => c.id !== id));
-    });
-  };
-
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
-  const filteredNotes = (cat: string) => marketNotes.filter(n => n.category === cat);
-
-  const statusColors: Record<string, string> = {
-    EN_COURS: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]',
-    RESOLU: 'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]',
-    ABANDONNE: 'border-[#E8E7E4] text-[#6B6A67] bg-[#F7F7F6]',
-  };
-  const statusLabel: Record<string, string> = { EN_COURS: 'En cours', RESOLU: 'Résolu', ABANDONNE: 'Abandonné' };
 
   return (
     <div>
-      {success && <div className="mb-[16px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[10px_14px] text-[13px] text-[#2D6A4F]">{success}</div>}
-      {error && <div className="mb-[16px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[10px_14px] text-[13px] text-[#9B2335]">{error}</div>}
-
-      {/* SOUS-ONGLETS */}
-      <div className="flex gap-0 border-b border-[#E8E7E4] mb-[24px] overflow-x-auto">
-        {tabs.map(t => (
-          <button key={t} onClick={() => setSubTab(t)}
-            className={`py-[8px] px-[16px] text-[12px] transition-colors border-b-2 whitespace-nowrap ${subTab === t ? 'text-[#1A1A19] font-medium border-[#1A3A5C]' : 'text-[#6B6A67] border-transparent hover:text-[#1A1A19]'}`}>
-            {t}
-          </button>
-        ))}
+      {/* BARRE */}
+      <div className="flex justify-between items-center mb-[16px]">
+        <p className="text-[13px] text-[#6B6A67]">{markets.length} marché{markets.length > 1 ? 's' : ''} avec ce partenaire</p>
+        <button onClick={() => setShowForm(!showForm)}
+          className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[14px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] transition-colors">
+          {showForm ? 'Annuler' : '+ Nouveau marché'}
+        </button>
       </div>
 
-      {/* NIVEAU D'EXÉCUTION */}
-      {subTab === "Niveau d'exécution" && (
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px]">
-          <div className="mb-[32px]">
-            <div className="flex justify-between items-end mb-[8px]">
-              <span className="text-[14px] font-medium text-[#1A1A19]">Taux d&apos;exécution global</span>
-              <span className="text-[18px] font-medium text-[#1A3A5C]">{execRate}%</span>
-            </div>
-            <input type="range" min="0" max="100" value={execRate} onChange={e => setExecRate(parseInt(e.target.value))} className="w-full accent-[#1A3A5C]" />
-            <div className="h-[8px] bg-[#E8E7E4] rounded-full overflow-hidden mt-[8px]">
-              <div className="h-full bg-[#1A3A5C] transition-all" style={{ width: `${execRate}%` }}></div>
-            </div>
-            {market?.updatedAt && <div className="text-[12px] text-[#6B6A67] mt-[8px]">Dernière mise à jour : {formatDate(market.updatedAt)}</div>}
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px] mb-[24px]">
-            <div>
-              <label className={labelClass}>Phase actuelle</label>
-              <input type="text" value={phase} onChange={e => setPhase(e.target.value)} className={inputClass} placeholder="Ex: Phase 2 - Gros œuvre" />
-            </div>
-            <div>
-              <label className={labelClass}>Prochaine étape</label>
-              <input type="text" value={nextStep} onChange={e => setNextStep(e.target.value)} className={inputClass} placeholder="Ex: Validation électrique" />
-            </div>
-            <div>
-              <label className={labelClass}>Date prévisionnelle de clôture</label>
-              <input type="date" value={closingDate} onChange={e => setClosingDate(e.target.value)} className={inputClass} />
-            </div>
-          </div>
-          <button onClick={handleUpdateExecution} disabled={isPending}
-            className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] disabled:opacity-60">
-            {isPending ? 'Mise à jour…' : 'Mettre à jour'}
-          </button>
-        </div>
-      )}
+      {/* FEEDBACK */}
+      {error   && <div className="mb-[12px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[10px] text-[13px] text-[#9B2335]">{error}</div>}
+      {success && <div className="mb-[12px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[10px] text-[13px] text-[#2D6A4F]">{success}</div>}
 
-      {/* CONTENTIEUX */}
-      {subTab === 'Contentieux' && (
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px]">
-          <h3 className="text-[15px] font-medium text-[#1A1A19] mb-[20px]">Enregistrer un contentieux</h3>
-          <form onSubmit={handleCreateContentieux} className="flex flex-col gap-[16px] mb-[32px]">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-[16px]">
-              <div><label className={labelClass}>Objet *</label><input type="text" name="subject" required className={inputClass} /></div>
-              <div><label className={labelClass}>Date d&apos;ouverture *</label><input type="date" name="openDate" required className={inputClass} /></div>
+      {/* FORM CRÉATION RAPIDE */}
+      {showForm && (
+        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px] mb-[20px]">
+          <h3 className="text-[14px] font-medium text-[#1A1A19] mb-[16px]">Créer un marché</h3>
+          <form onSubmit={handleCreate}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
+              <div className="md:col-span-2">
+                <label className={lc}>Nom du marché *</label>
+                <input type="text" name="name" required placeholder="Ex: Construction bloc B" className={ic} />
+              </div>
               <div>
-                <label className={labelClass}>Statut</label>
-                <select name="status" className={inputClass}>
-                  <option value="EN_COURS">En cours</option>
-                  <option value="RESOLU">Résolu</option>
-                  <option value="ABANDONNE">Abandonné</option>
-                </select>
+                <label className={lc}>Date de début</label>
+                <input type="date" name="startDate" className={ic} />
+              </div>
+              <div>
+                <label className={lc}>Date de fin prévisionnelle</label>
+                <input type="date" name="endDate" className={ic} />
+              </div>
+              <div className="md:col-span-2">
+                <label className={lc}>Description</label>
+                <textarea name="description" rows={2} className={`${ic} resize-y`} placeholder="Contexte, objectifs…"></textarea>
               </div>
             </div>
-            <div><label className={labelClass}>Description</label><textarea name="description" rows={3} className={`${inputClass} resize-y`}></textarea></div>
-            <button type="submit" disabled={isPending} className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] disabled:opacity-60 w-fit">
-              {isPending ? 'Enregistrement…' : 'Enregistrer'}
-            </button>
+            <div className="flex gap-[10px] justify-end">
+              <button type="button" onClick={() => setShowForm(false)}
+                className="border border-[#E8E7E4] text-[#1A1A19] py-[8px] px-[14px] rounded-[6px] text-[12px] hover:bg-[#F7F7F6]">
+                Annuler
+              </button>
+              <button type="submit" disabled={isPending}
+                className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[14px] rounded-[6px] text-[12px] font-medium hover:bg-[#142d4a] disabled:opacity-60">
+                {isPending ? 'Création…' : 'Créer'}
+              </button>
+            </div>
           </form>
-          <h3 className="text-[14px] font-medium text-[#1A1A19] mb-[12px]">Contentieux enregistrés ({contentieuxList.length})</h3>
-          {contentieuxList.length === 0 ? (
-            <p className="text-[13px] text-[#6B6A67]">Aucun contentieux enregistré.</p>
-          ) : (
-            <table className="w-full text-left border-t border-[#E8E7E4]">
-              <tbody>
-                {contentieuxList.map(c => (
-                  <tr key={c.id} className="border-b border-[#E8E7E4]">
-                    <td className="py-[12px] text-[13px] text-[#1A1A19] pr-[12px]">{c.subject}</td>
-                    <td className="py-[12px] text-[12px] text-[#6B6A67] pr-[12px]">{formatDate(c.openDate)}</td>
-                    <td className="py-[12px] pr-[12px]"><span className={`inline-block border rounded-[4px] p-[2px_8px] text-[12px] ${statusColors[c.status]}`}>{statusLabel[c.status]}</span></td>
-                    <td className="py-[12px] text-right">
-                      <div className="flex gap-[8px] justify-end">
-                        {c.status === 'EN_COURS' && <button onClick={() => handleUpdateContentieux(c.id, 'RESOLU')} className="text-[12px] text-[#2D6A4F] hover:underline">Résoudre</button>}
-                        <button onClick={() => handleDeleteContentieux(c.id)} className="text-[12px] text-[#9B2335] hover:underline">Supprimer</button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
         </div>
       )}
 
-      {/* AUDIT / CR / AUTRES */}
-      {(subTab === 'Audit' || subTab === 'Comptes rendus' || subTab === 'Autres') && (() => {
-        const cat = subTab === 'Audit' ? 'AUDIT' : subTab === 'Comptes rendus' ? 'COMPTE_RENDU' : 'AUTRE';
-        const notes = filteredNotes(cat);
-        return (
-          <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px]">
-            <h3 className="text-[15px] font-medium text-[#1A1A19] mb-[20px]">
-              {subTab === 'Audit' ? "Observations d'audit" : subTab === 'Comptes rendus' ? 'Comptes rendus de réunion' : 'Documents et notes divers'}
-            </h3>
-            <form onSubmit={e => handleSaveNote(e, cat)} className="flex flex-col gap-[14px] mb-[28px]">
-              {subTab === 'Comptes rendus' && (
-                <div className="grid grid-cols-2 gap-[16px]">
-                  <div><label className={labelClass}>Date de réunion</label><input type="date" name="date" className={inputClass} /></div>
-                  <div><label className={labelClass}>Participants</label><input type="text" name="participants" className={inputClass} placeholder="Jean D., Marie L.…" /></div>
-                </div>
-              )}
-              <div><label className={labelClass}>Notes / Observations *</label><textarea name="notes" rows={3} required className={`${inputClass} resize-y`}></textarea></div>
-              <div className="flex justify-end">
-                <button type="submit" disabled={isPending} className="bg-[#1A3A5C] text-[#FFFFFF] py-[6px] px-[14px] rounded-[6px] text-[12px] font-medium hover:bg-[#142d4a] disabled:opacity-60">
-                  {isPending ? 'Sauvegarde…' : 'Sauvegarder'}
-                </button>
-              </div>
-            </form>
-            {notes.length > 0 && (
-              <div>
-                <h4 className="text-[13px] font-medium text-[#1A1A19] mb-[12px]">Historique ({notes.length})</h4>
-                <div className="flex flex-col gap-[10px]">
-                  {notes.map(note => (
-                    <div key={note.id} className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[14px]">
-                      <div className="flex justify-between mb-[6px]">
-                        <span className="text-[12px] text-[#6B6A67]">{formatDate(note.date)}</span>
-                        {note.participants && <span className="text-[12px] text-[#6B6A67]">Participants : {note.participants}</span>}
-                      </div>
-                      <p className="text-[13px] text-[#1A1A19] leading-[1.6]">{note.notes}</p>
+      {/* LISTE MARCHÉS */}
+      {loading ? (
+        <div className="p-[32px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+      ) : markets.length === 0 ? (
+        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[40px] text-center text-[13px] text-[#6B6A67]">
+          Aucun marché avec ce partenaire.
+        </div>
+      ) : (
+        <div className="flex flex-col gap-[10px]">
+          {markets.map(m => {
+            const cfg   = STATUS_CFG[m.status] || STATUS_CFG.EN_COURS;
+            const done  = m.steps.filter(s => s.status === 'TERMINE').length;
+            const late  = m.steps.filter(s => s.status !== 'TERMINE' && s.status !== 'ANNULE' && new Date(s.endDate) < new Date()).length;
+            return (
+              <div key={m.id} className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[16px_20px]">
+                <div className="flex flex-col sm:flex-row justify-between items-start gap-[12px]">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-[8px] flex-wrap mb-[4px]">
+                      <Link href={`/dashboard/marche/${m.id}`}
+                        className="text-[14px] font-medium text-[#1A1A19] hover:text-[#1A3A5C] hover:underline">
+                        {m.name}
+                      </Link>
+                      <span className={`inline-block border rounded-[4px] py-[1px] px-[6px] text-[11px] ${cfg.cls}`}>
+                        {cfg.label}
+                      </span>
+                      {m._count.contentieux > 0 && (
+                        <span className="inline-block border border-[#9B2335] text-[#9B2335] bg-[#FCEBEB] rounded-[3px] py-[1px] px-[6px] text-[10px]">
+                          {m._count.contentieux} contentieux
+                        </span>
+                      )}
                     </div>
-                  ))}
+
+                    {/* Barre progression */}
+                    <div className="flex items-center gap-[8px] mt-[8px]">
+                      <div className="flex-1 h-[5px] bg-[#E8E7E4] rounded-full overflow-hidden">
+                        <div className="h-full bg-[#1A3A5C] transition-all" style={{ width: `${m.executionRate}%` }}></div>
+                      </div>
+                      <span className="text-[12px] font-medium text-[#1A1A19] w-[36px] text-right">{m.executionRate}%</span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-[12px] mt-[6px] text-[12px] text-[#6B6A67]">
+                      <span>{done}/{m.steps.length} étapes</span>
+                      {late > 0 && <span className="text-[#9B2335]">{late} en retard</span>}
+                      {m.startDate && <span>{formatDateShort(m.startDate)} → {m.endDate ? formatDateShort(m.endDate) : '?'}</span>}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-[8px] flex-shrink-0">
+                    <Link href={`/dashboard/marche/${m.id}`}
+                      className="text-[12px] text-[#1A3A5C] hover:underline">
+                      Détail
+                    </Link>
+                    <Link href={`/dashboard/marche/${m.id}/edit`}
+                      className="text-[12px] text-[#6B6A67] hover:underline">
+                      Modifier
+                    </Link>
+                    <button onClick={() => handleDelete(m.id, m.name)} disabled={isPending}
+                      className="text-[12px] text-[#9B2335] hover:underline disabled:opacity-50">
+                      Supprimer
+                    </button>
+                  </div>
                 </div>
               </div>
-            )}
-          </div>
-        );
-      })()}
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

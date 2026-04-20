@@ -1,24 +1,22 @@
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
+import { formatDate } from '@/lib/utils';
 import PartnerSpaceClient from './PartnerSpaceClient';
 
-export default async function PartnerAccessPage({ params }: { params: { token: string } }) {
+export default async function PartnerAccessPage({
+  params,
+}: {
+  params: { token: string };
+}) {
+  // Vérification réelle du token en base
   const partner = await prisma.partner.findUnique({
     where: { token: params.token },
-    include: {
-      documents: {
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, name: true, fileType: true, size: true, url: true, createdAt: true, category: true },
-      },
-      messages: {
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, subject: true, content: true, createdAt: true, author: { select: { name: true } } },
-      },
-      chatMessages: {
-        orderBy: { createdAt: 'asc' },
-        take: 50,
-        select: { id: true, content: true, senderType: true, createdAt: true },
-      },
+    select: {
+      id:          true,
+      orgName:     true,
+      contactName: true,
+      status:      true,
+      token:       true,
     },
   });
 
@@ -26,25 +24,28 @@ export default async function PartnerAccessPage({ params }: { params: { token: s
     redirect('/partner/expired');
   }
 
+  // Charger les documents partagés
+  const documents = await prisma.document.findMany({
+    where:   { partnerId: partner.id },
+    orderBy: { createdAt: 'desc' },
+    include: { views: { orderBy: { viewedAt: 'desc' }, take: 1 } },
+  });
+
+  // Charger les messages reçus (MSP → Partenaire)
+  const messages = await (prisma as any).message.findMany({
+    where:   { partnerId: partner.id, direction: 'MSP_TO_PARTNER' },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      author:      { select: { name: true } },
+      attachedDoc: { select: { name: true, url: true } },
+    },
+  });
+
   return (
     <PartnerSpaceClient
-      partner={{
-        id: partner.id,
-        orgName: partner.orgName,
-        token: partner.token,
-        documents: partner.documents.map(d => ({
-          ...d,
-          createdAt: d.createdAt.toISOString(),
-        })),
-        messages: partner.messages.map(m => ({
-          ...m,
-          createdAt: m.createdAt.toISOString(),
-        })),
-        chatMessages: partner.chatMessages.map(c => ({
-          ...c,
-          createdAt: c.createdAt.toISOString(),
-        })),
-      }}
+      partner={partner}
+      documents={documents as any}
+      messages={messages as any}
     />
   );
 }

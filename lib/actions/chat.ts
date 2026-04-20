@@ -7,7 +7,6 @@ import prisma from '@/lib/prisma';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// ── Envoyer un message chat (côté admin) ─────────────────────────────────────
 export async function sendChatMessage(partnerId: string, content: string) {
   if (!content.trim() || !partnerId) return { success: false, error: 'Message vide.' };
 
@@ -31,7 +30,6 @@ export async function sendChatMessage(partnerId: string, content: string) {
   }
 }
 
-// ── Envoyer un message chat (côté partenaire via token) ──────────────────────
 export async function sendChatMessageAsPartner(token: string, content: string) {
   if (!content.trim() || !token) return { success: false, error: 'Message vide.' };
 
@@ -43,16 +41,14 @@ export async function sendChatMessageAsPartner(token: string, content: string) {
       data: { content, partnerId: partner.id, senderType: 'partner', isRead: false },
     });
 
-    // Notification in-app pour l'admin
     await prisma.notification.create({
       data: { content: `Nouveau message de ${partner.orgName}`, partnerId: partner.id },
     });
 
-    // Email à l'admin si notifications activées
     if (partner.notifyAdmin && process.env.CONTACT_EMAIL) {
       await resend.emails.send({
-        from: 'Melanie Services <noreply@melanieservices.com>',
-        to: process.env.CONTACT_EMAIL,
+        from:    'Melanie Services <noreply@melanieservices.com>',
+        to:      process.env.CONTACT_EMAIL,
         subject: `Nouveau message de ${partner.orgName}`,
         html: `
           <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
@@ -71,11 +67,10 @@ export async function sendChatMessageAsPartner(token: string, content: string) {
   }
 }
 
-// ── Récupérer les messages d'un chat ─────────────────────────────────────────
 export async function getChatMessages(partnerId: string) {
   try {
     const messages = await prisma.chatMessage.findMany({
-      where: { partnerId },
+      where:   { partnerId },
       orderBy: { createdAt: 'asc' },
       include: { user: { select: { name: true } } },
     });
@@ -85,12 +80,11 @@ export async function getChatMessages(partnerId: string) {
   }
 }
 
-// ── Marquer messages comme lus (côté admin) ──────────────────────────────────
 export async function markChatMessagesRead(partnerId: string) {
   try {
     await prisma.chatMessage.updateMany({
       where: { partnerId, senderType: 'partner', isRead: false },
-      data: { isRead: true },
+      data:  { isRead: true },
     });
     revalidatePath(`/dashboard/partners/${partnerId}`);
     return { success: true };
@@ -99,7 +93,6 @@ export async function markChatMessagesRead(partnerId: string) {
   }
 }
 
-// ── Compter les messages non lus globaux ─────────────────────────────────────
 export async function getUnreadChatCount() {
   try {
     const count = await prisma.chatMessage.count({

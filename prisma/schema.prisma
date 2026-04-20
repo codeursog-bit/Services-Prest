@@ -5,14 +5,7 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-}
-
-// ════════════════════════════════════════════
-// ENUMS
-// ════════════════════════════════════════════
-
-enum Role {
-  ADMIN
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 enum PartnerType {
@@ -40,9 +33,27 @@ enum ContentieuxStatus {
   ABANDONNE
 }
 
-// ════════════════════════════════════════════
-// UTILISATEURS
-// ════════════════════════════════════════════
+enum MarketStepStatus {
+  A_VENIR
+  EN_COURS
+  TERMINE
+  RETARD
+  ANNULE
+}
+
+enum DebtType {
+  AVANCE_SALAIRE
+  CAS_SOCIAL
+  DETTE_ENTREPRISE
+  AUTRE
+}
+
+enum DebtStatus {
+  ACCORDE
+  REMBOURSE
+  NON_REMBOURSE
+  REFUSE
+}
 
 model User {
   id        String   @id @default(cuid())
@@ -50,227 +61,15 @@ model User {
   email     String   @unique
   password  String
   phone     String?
-  role      Role     @default(ADMIN)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  messagesSent Message[]
-  contracts    ContractVersion[]
-  chatMessages ChatMessage[]
+  messagesSent     Message[]
+  contractVersions ContractVersion[]
+  notifications    Notification[]
+  chatMessages     ChatMessage[]
 
   @@map("users")
-}
-
-// ════════════════════════════════════════════
-// PARTENAIRES
-// ════════════════════════════════════════════
-
-model Partner {
-  id          String        @id @default(cuid())
-  orgName     String
-  contactName String
-  email       String
-  phone       String?
-  type        PartnerType
-  sector      String?
-  address     String?
-  notes       String?
-  token       String        @unique
-  status      PartnerStatus @default(ACTIF)
-  notifyOnDoc Boolean       @default(true)
-  notifyAdmin Boolean       @default(true)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  documents     Document[]
-  messages      Message[]
-  invoices      Invoice[]
-  markets       Market[]       // ✅ FIX: plus de @unique ici — un partenaire peut avoir plusieurs marchés
-  marketNotes   MarketNote[]
-  contentieux   Contentieux[]
-  notifications Notification[]
-  chatMessages  ChatMessage[]
-
-  @@map("partners")
-}
-
-// ════════════════════════════════════════════
-// DOCUMENTS
-// ════════════════════════════════════════════
-
-model Document {
-  id           String    @id @default(cuid())
-  name         String
-  fileType     String
-  size         String
-  url          String
-  category     String?
-  validityDate DateTime?
-  partnerId    String?
-  partner      Partner?  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  createdAt    DateTime  @default(now())
-
-  views    DocumentView[]
-  messages Message[]
-
-  @@index([partnerId])
-  @@map("documents")
-}
-
-model DocumentView {
-  id         String   @id @default(cuid())
-  documentId String
-  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  viewedAt   DateTime @default(now())
-  ipHash     String?
-
-  @@index([documentId])
-  @@map("document_views")
-}
-
-// ════════════════════════════════════════════
-// MESSAGES (Infos à transmettre)
-// ════════════════════════════════════════════
-
-model Message {
-  id            String    @id @default(cuid())
-  subject       String
-  content       String    @db.Text
-  authorId      String
-  author        User      @relation(fields: [authorId], references: [id])
-  partnerId     String
-  partner       Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  attachedDocId String?
-  attachedDoc   Document? @relation(fields: [attachedDocId], references: [id])
-  createdAt     DateTime  @default(now())
-
-  @@index([partnerId])
-  @@map("messages")
-}
-
-// ════════════════════════════════════════════
-// CHAT TEMPS RÉEL
-// ════════════════════════════════════════════
-
-model ChatMessage {
-  id        String   @id @default(cuid())
-  content   String   @db.Text
-  // Soit envoyé par un admin (userId renseigné), soit par le partenaire (partnerId renseigné)
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id])
-  partnerId String
-  partner   Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  // Qui a envoyé : "admin" ou "partner"
-  senderType String  @default("admin")
-  isRead    Boolean  @default(false)
-  createdAt DateTime @default(now())
-
-  @@index([partnerId])
-  @@map("chat_messages")
-}
-
-// ════════════════════════════════════════════
-// SUIVI MARCHÉ
-// ════════════════════════════════════════════
-
-model Market {
-  id             String    @id @default(cuid())
-  partnerId      String    // ✅ FIX: @unique supprimé — plusieurs marchés possibles par partenaire
-  partner        Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  name           String    @default("Marché principal") // Nom du marché
-  phase          String
-  nextStep       String?
-  executionRate  Int       @default(0)
-  nextReviewDate DateTime?
-  closingDate    DateTime?
-  updatedAt      DateTime  @updatedAt
-  createdAt      DateTime  @default(now())
-
-  @@index([partnerId])
-  @@map("markets")
-}
-
-model MarketNote {
-  id           String   @id @default(cuid())
-  partnerId    String
-  partner      Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  category     String   // "AUDIT", "COMPTE_RENDU", "AUTRE"
-  notes        String   @db.Text
-  date         DateTime @default(now())
-  participants String?
-  createdAt    DateTime @default(now())
-
-  @@index([partnerId])
-  @@map("market_notes")
-}
-
-model Contentieux {
-  id          String            @id @default(cuid())
-  partnerId   String
-  partner     Partner           @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  subject     String
-  description String?           @db.Text
-  openDate    DateTime
-  status      ContentieuxStatus @default(EN_COURS)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  @@index([partnerId])
-  @@map("contentieux")
-}
-
-// ════════════════════════════════════════════
-// BANQUES & CRÉANCES
-// ════════════════════════════════════════════
-
-model Invoice {
-  id          String        @id @default(cuid())
-  ref         String        @unique
-  description String
-  amount      Float
-  issueDate   DateTime
-  dueDate     DateTime?
-  status      InvoiceStatus @default(NON_SOLDE)
-  notes       String?       @db.Text
-  fileUrl     String?
-  partnerId   String
-  partner     Partner       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  @@index([partnerId])
-  @@map("invoices")
-}
-
-// ════════════════════════════════════════════
-// CONTRAT
-// ════════════════════════════════════════════
-
-model ContractVersion {
-  id          String   @id @default(cuid())
-  versionName String
-  fileUrl     String
-  authorId    String
-  author      User     @relation(fields: [authorId], references: [id])
-  createdAt   DateTime @default(now())
-
-  @@map("contract_versions")
-}
-
-// ════════════════════════════════════════════
-// SYSTÈME
-// ════════════════════════════════════════════
-
-model Notification {
-  id        String   @id @default(cuid())
-  content   String
-  isRead    Boolean  @default(false)
-  partnerId String?
-  partner   Partner? @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@index([isRead])
-  @@map("notifications")
 }
 
 model PasswordResetToken {
@@ -281,4 +80,262 @@ model PasswordResetToken {
   createdAt DateTime @default(now())
 
   @@map("password_reset_tokens")
+}
+
+model Partner {
+  id          String        @id @default(cuid())
+  orgName     String
+  contactName String
+  email       String
+  phone       String?
+  type        PartnerType
+  sector      String?
+  address     String?
+  notes       String?       @db.Text
+  token       String        @unique
+  status      PartnerStatus @default(ACTIF)
+  notifyOnDoc Boolean       @default(true)
+  notifyAdmin Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  documents     Document[]
+  messages      Message[]
+  invoices      Invoice[]
+  markets       Market[]
+  marketNotes   MarketNote[]
+  contentieux   Contentieux[]
+  debts         Debt[]
+  notifications Notification[]
+  chatMessages  ChatMessage[]
+
+  @@index([token])
+  @@index([status])
+  @@map("partners")
+}
+
+model Document {
+  id           String    @id @default(cuid())
+  name         String
+  fileType     String
+  size         String
+  url          String
+  category     String?
+  validityDate DateTime?
+  partnerId    String?
+  createdAt    DateTime  @default(now())
+
+  partner  Partner?       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  views    DocumentView[]
+  messages Message[]
+
+  @@index([partnerId])
+  @@index([category])
+  @@map("documents")
+}
+
+model DocumentView {
+  id         String   @id @default(cuid())
+  documentId String
+  viewedAt   DateTime @default(now())
+  ipHash     String?
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@map("document_views")
+}
+
+model Market {
+  id             String    @id @default(cuid())
+  partnerId      String
+  name           String
+  description    String?   @db.Text
+  status         String    @default("EN_COURS")
+  executionRate  Int       @default(0)
+  nextStep       String?   @db.Text
+  startDate      DateTime? @db.Date
+  endDate        DateTime? @db.Date
+  closingDate    DateTime? @db.Date
+  nextReviewDate DateTime? @db.Date
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  partner     Partner       @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  steps       MarketStep[]
+  notes       MarketNote[]
+  contentieux Contentieux[]
+
+  @@index([partnerId])
+  @@map("markets")
+}
+
+model MarketStep {
+  id             String           @id @default(cuid())
+  marketId       String
+  title          String
+  description    String?          @db.Text
+  startDate      DateTime         @db.Date
+  endDate        DateTime         @db.Date
+  status         MarketStepStatus @default(A_VENIR)
+  order          Int              @default(0)
+  incidents      String?          @db.Text
+  alertStartSent Boolean          @default(false)
+  alertEndSent   Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  market Market @relation(fields: [marketId], references: [id], onDelete: Cascade)
+
+  @@index([marketId])
+  @@map("market_steps")
+}
+
+model MarketNote {
+  id           String   @id @default(cuid())
+  partnerId    String
+  marketId     String?
+  category     String
+  title        String?
+  notes        String   @db.Text
+  date         DateTime @default(now())
+  participants String?
+  createdAt    DateTime @default(now())
+
+  partner Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  market  Market?  @relation(fields: [marketId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([marketId])
+  @@map("market_notes")
+}
+
+model Contentieux {
+  id          String            @id @default(cuid())
+  partnerId   String
+  marketId    String?
+  subject     String
+  description String?           @db.Text
+  openDate    DateTime          @db.Date
+  status      ContentieuxStatus @default(EN_COURS)
+  resolution  String?           @db.Text
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  partner Partner  @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  market  Market?  @relation(fields: [marketId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@map("contentieux")
+}
+
+model Invoice {
+  id             String        @id @default(cuid())
+  ref            String        @unique
+  description    String
+  amount         Float
+  issueDate      DateTime      @db.Date
+  dueDate        DateTime?     @db.Date
+  status         InvoiceStatus @default(NON_SOLDE)
+  notes          String?       @db.Text
+  fileUrl        String?
+  reminderSentAt DateTime?
+  partnerId      String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([partnerId])
+  @@index([status])
+  @@map("invoices")
+}
+
+model Debt {
+  id         String     @id @default(cuid())
+  type       DebtType
+  debtorName String
+  motif      String
+  amount     Float
+  status     DebtStatus @default(ACCORDE)
+  grantedAt  DateTime   @db.Date
+  repaidAt   DateTime?  @db.Date
+  statusNote String?    @db.Text
+  notes      String?    @db.Text
+  partnerId  String?
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  partner Partner? @relation(fields: [partnerId], references: [id], onDelete: SetNull)
+
+  @@index([type])
+  @@index([status])
+  @@map("debts")
+}
+
+model Message {
+  id            String   @id @default(cuid())
+  subject       String
+  content       String   @db.Text
+  authorId      String?
+  partnerId     String
+  attachedDocId String?
+  direction     String   @default("MSP_TO_PARTNER")
+  isRead        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+
+  author      User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  partner     Partner   @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  attachedDoc Document? @relation(fields: [attachedDocId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([direction])
+  @@map("messages")
+}
+
+model ChatMessage {
+  id         String   @id @default(cuid())
+  content    String   @db.Text
+  senderType String
+  isRead     Boolean  @default(false)
+  partnerId  String
+  userId     String?
+  createdAt  DateTime @default(now())
+
+  partner Partner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([partnerId])
+  @@index([isRead])
+  @@map("chat_messages")
+}
+
+model ContractVersion {
+  id          String   @id @default(cuid())
+  versionName String
+  fileUrl     String
+  authorId    String?
+  createdAt   DateTime @default(now())
+
+  author User? @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@map("contract_versions")
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  content   String
+  isRead    Boolean  @default(false)
+  type      String   @default("INFO")
+  link      String?
+  userId    String?
+  partnerId String?
+  createdAt DateTime @default(now())
+
+  user    User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  partner Partner? @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  @@index([isRead])
+  @@index([userId])
+  @@map("notifications")
 }

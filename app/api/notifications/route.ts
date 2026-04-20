@@ -1,20 +1,47 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
+import { apiSuccess, apiError } from '@/lib/utils';
 
+// GET /api/notifications?limit=20  → notifications de l'admin connecté
 export async function GET(req: NextRequest) {
   const session = await auth();
-  if (!session) return NextResponse.json({ error: 'Non autorisé' }, { status: 401 });
+  if (!session) return apiError('Non authentifié', 401);
+
+  const limit = parseInt(req.nextUrl.searchParams.get('limit') || '50');
+
   try {
-    const notifications = await prisma.notification.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 30,
-      include: { partner: { select: { orgName: true, id: true } } },
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email! },
     });
-    const unreadCount = await prisma.notification.count({ where: { isRead: false } });
-    const unreadChat = await prisma.chatMessage.count({ where: { senderType: 'partner', isRead: false } });
-    return NextResponse.json({ notifications, unreadCount, unreadChat });
-  } catch {
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+
+    const notifications = await (prisma as any).notification.findMany({
+      where: {
+        OR: [
+          { userId: user?.id },
+          { userId: null }, // notifications globales
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+      take:    limit,
+      include: {
+        partner: { select: { id: true, orgName: true } },
+      },
+    });
+
+    const unreadCount = await (prisma as any).notification.count({
+      where: {
+        isRead: false,
+        OR: [
+          { userId: user?.id },
+          { userId: null },
+        ],
+      },
+    });
+
+    return apiSuccess({ notifications, unreadCount });
+  } catch (err) {
+    console.error('GET /api/notifications:', err);
+    return apiError('Erreur serveur', 500);
   }
 }

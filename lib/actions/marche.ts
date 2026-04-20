@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import prisma from '@/lib/prisma';
+import { ContentieuxStatus } from '@prisma/client';
 
 export async function upsertMarcheNote(
   partnerId: string,
@@ -15,9 +16,9 @@ export async function upsertMarcheNote(
         partnerId,
         category,
         notes,
-        date: metadata?.date ? new Date(metadata.date) : new Date(),
-        participants: metadata?.participants || null,
-      }
+        date:         metadata?.date         ? new Date(metadata.date) : new Date(),
+        participants: metadata?.participants ?? null,
+      },
     });
     revalidatePath(`/dashboard/partners/${partnerId}`);
     revalidatePath('/dashboard/marche');
@@ -28,11 +29,9 @@ export async function upsertMarcheNote(
   }
 }
 
-// Fix: findFirst + create/update car @unique supprimé sur partnerId
 export async function updateExecutionLevel(
   partnerId: string,
   percentage: number,
-  phase: string,
   nextStep: string,
   closingDate: string
 ) {
@@ -43,20 +42,19 @@ export async function updateExecutionLevel(
         where: { id: existing.id },
         data: {
           executionRate: percentage,
-          phase,
-          nextStep: nextStep || null,
-          closingDate: closingDate ? new Date(closingDate) : null,
-        }
+          nextStep:      nextStep    || null,
+          closingDate:   closingDate ? new Date(closingDate) : null,
+        },
       });
     } else {
       await prisma.market.create({
         data: {
           partnerId,
+          name:          'Marché principal',
           executionRate: percentage,
-          phase,
-          nextStep: nextStep || null,
-          closingDate: closingDate ? new Date(closingDate) : null,
-        }
+          nextStep:      nextStep    || null,
+          closingDate:   closingDate ? new Date(closingDate) : null,
+        },
       });
     }
     revalidatePath(`/dashboard/partners/${partnerId}`);
@@ -72,9 +70,19 @@ export async function updateNextReviewDate(partnerId: string, date: string) {
   try {
     const existing = await prisma.market.findFirst({ where: { partnerId } });
     if (existing) {
-      await prisma.market.update({ where: { id: existing.id }, data: { nextReviewDate: new Date(date) } });
+      await prisma.market.update({
+        where: { id: existing.id },
+        data:  { nextReviewDate: new Date(date) },
+      });
     } else {
-      await prisma.market.create({ data: { partnerId, executionRate: 0, phase: 'Initialisation', nextReviewDate: new Date(date) } });
+      await prisma.market.create({
+        data: {
+          partnerId,
+          name:          'Marché principal',
+          executionRate: 0,
+          nextReviewDate: new Date(date),
+        },
+      });
     }
     revalidatePath(`/dashboard/partners/${partnerId}`);
     return { success: true };
@@ -90,11 +98,11 @@ export async function createContentieux(partnerId: string, data: {
     await prisma.contentieux.create({
       data: {
         partnerId,
-        subject: data.subject,
+        subject:     data.subject,
         description: data.description || null,
-        openDate: new Date(data.openDate),
-        status: data.status as any,
-      }
+        openDate:    new Date(data.openDate),
+        status:      data.status as ContentieuxStatus,
+      },
     });
     revalidatePath(`/dashboard/partners/${partnerId}`);
     return { success: true };
@@ -106,7 +114,10 @@ export async function createContentieux(partnerId: string, data: {
 
 export async function updateContentieux(id: string, status: string) {
   try {
-    const updated = await prisma.contentieux.update({ where: { id }, data: { status: status as any } });
+    const updated = await prisma.contentieux.update({
+      where: { id },
+      data:  { status: status as ContentieuxStatus },
+    });
     revalidatePath(`/dashboard/partners/${updated.partnerId}`);
     return { success: true };
   } catch (error) {

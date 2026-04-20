@@ -1,264 +1,338 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { signOut } from 'next-auth/react';
+import { usePathname } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
+import { getInitials } from '@/lib/utils';
 
-interface Props {
-  children: React.ReactNode;
-  userInitials: string;
-  pageTitle: string;
-}
-
-const navSections = [
+const NAV_ITEMS = [
   {
+    id: 'dashboard',
+    label: 'Tableau de bord',
+    href: '/dashboard',
+    exact: true,
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+        <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'partners',
     label: 'Partenaires',
-    items: [
-      { href: '/dashboard/partners', label: 'Mes partenaires', icon: <><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.85"/></> },
-      { href: '/dashboard/messages', label: 'Infos à transmettre', icon: <><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></> },
-    ],
+    href: '/dashboard/partners',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <circle cx="9" cy="7" r="3"/>
+        <path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
+        <path d="M16 3.13a4 4 0 010 7.75"/>
+        <path d="M21 21v-2a4 4 0 00-3-3.85"/>
+      </svg>
+    ),
   },
   {
+    id: 'documents',
     label: 'Documents',
-    items: [
-      { href: '/dashboard/documents', label: 'Docs entreprise', icon: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></> },
-      { href: '/dashboard/marche', label: 'Suivi marché', icon: <><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></> },
-      { href: '/dashboard/contrat', label: 'Notre contrat', icon: <><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M9 18l2-2 2 2 4-4"/></> },
-    ],
+    href: '/dashboard/documents',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+    ),
   },
   {
-    label: 'Finances',
-    items: [
-      { href: '/dashboard/banques', label: 'Banques & Créances', icon: <><rect x="3" y="9" width="18" height="12" rx="1"/><path d="M3 9l9-6 9 6"/><line x1="7" y1="9" x2="7" y2="21"/><line x1="12" y1="9" x2="12" y2="21"/><line x1="17" y1="9" x2="17" y2="21"/></> },
-    ],
+    id: 'marche',
+    label: 'Suivi marchés',
+    href: '/dashboard/marche',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'messages',
+    label: 'Messages',
+    href: '/dashboard/messages',
+    badge: true, // affiche le badge si messages non lus
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'banques',
+    label: 'Banques & Créances',
+    href: '/dashboard/banques',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <line x1="12" y1="1" x2="12" y2="23"/>
+        <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'dettes',
+    label: 'Dettes internes',
+    href: '/dashboard/dettes',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <circle cx="12" cy="12" r="10"/>
+        <path d="M12 8v4l3 3"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'contrat',
+    label: 'Contrat',
+    href: '/dashboard/contrat',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'settings',
+    label: 'Paramètres',
+    href: '/dashboard/settings',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+    ),
   },
 ];
 
-function NavIcon({ d }: { d: React.ReactNode }) {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-      {d}
-    </svg>
-  );
-}
+export default function DashboardLayout({
+  children,
+  pageTitle,
+}: {
+  children:  React.ReactNode;
+  pageTitle: string;
+}) {
+  const { data: session } = useSession();
+  const pathname          = usePathname();
+  const [sidebarOpen, setSidebarOpen]     = useState(false);
+  const [unreadMsgs, setUnreadMsgs]       = useState(0);
+  const [unreadNotifs, setUnreadNotifs]   = useState(0);
+  const [showUserMenu, setShowUserMenu]   = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval>>();
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
-export default function DashboardLayout({ children, userInitials, pageTitle }: Props) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [dark, setDark] = useState(true);
+  // Initiales depuis la session
+  const userInitials = session?.user?.name
+    ? getInitials(session.user.name)
+    : '?';
 
+  // Polling badges sidebar
   useEffect(() => {
-    const saved = localStorage.getItem('theme');
-    const isDark = saved ? saved === 'dark' : true;
-    setDark(isDark);
-    document.documentElement.classList.toggle('dark', isDark);
+    const poll = async () => {
+      try {
+        const [msgsRes, notifsRes] = await Promise.all([
+          fetch('/api/messages?direction=PARTNER_TO_MSP&unread=true'),
+          fetch('/api/notifications?limit=1'),
+        ]);
+        const [msgsData, notifsData] = await Promise.all([msgsRes.json(), notifsRes.json()]);
+        if (msgsData.success)    setUnreadMsgs(msgsData.unreadCount || 0);
+        if (notifsData.success)  setUnreadNotifs(notifsData.unreadCount || 0);
+      } catch { /* silencieux */ }
+    };
+    poll();
+    pollRef.current = setInterval(poll, 10000); // toutes les 10s pour le layout
+    return () => clearInterval(pollRef.current);
   }, []);
 
-  const toggleDark = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle('dark', next);
-    localStorage.setItem('theme', next ? 'dark' : 'light');
+  // Fermer le menu user au clic extérieur
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const isActive = (item: typeof NAV_ITEMS[0]) => {
+    if (item.exact) return pathname === item.href;
+    return pathname.startsWith(item.href);
   };
 
-  const resetTimer = useCallback(() => setTimeLeft(60), []);
-
-  useEffect(() => {
-    const events = ['mousemove', 'keydown', 'click', 'touchstart'];
-    events.forEach(e => document.addEventListener(e, resetTimer, { passive: true }));
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev <= 1) { router.push('/lock'); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => {
-      events.forEach(e => document.removeEventListener(e, resetTimer));
-      clearInterval(interval);
-    };
-  }, [resetTimer, router]);
-
-  const isActive = (path: string) => pathname === path || pathname.startsWith(`${path}/`);
-
-  const SidebarContent = () => (
-    <>
-      {/* Logo */}
-      <div className="px-5 py-4 border-b" style={{ borderColor: 'var(--sidebar-border)' }}>
-        <div className="text-[13px] font-medium" style={{ color: 'var(--text-primary)' }}>Melanie Services&Prest.</div>
-        <div className="text-[10px] mt-[2px]" style={{ color: 'var(--gold)' }}>Votre partenaire idéal !</div>
-      </div>
-
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-3 hide-scrollbar">
-        {navSections.map(section => (
-          <div key={section.label}>
-            <div className="px-4 pt-4 pb-1 text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text-muted)' }}>
-              {section.label}
-            </div>
-            {section.items.map(item => {
-              const active = isActive(item.href);
-              return (
-                <Link key={item.href} href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex items-center gap-2 mx-2 px-3 py-2 rounded-[6px] text-[13px] transition-colors"
-                  style={{
-                    background: active ? 'var(--sidebar-active)' : 'transparent',
-                    color: active ? 'var(--text-primary)' : 'var(--sidebar-text)',
-                    fontWeight: active ? 500 : 400,
-                    borderLeft: active ? '2px solid var(--gold)' : '2px solid transparent',
-                  }}>
-                  <NavIcon d={item.icon} />
-                  {item.label}
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-      </nav>
-
-      {/* Bottom */}
-      <div className="p-2 border-t" style={{ borderColor: 'var(--sidebar-border)' }}>
-        <Link href="/dashboard/settings"
-          className="flex items-center gap-2 mx-2 px-3 py-2 rounded-[6px] text-[13px] transition-colors"
-          style={{ color: 'var(--sidebar-text)' }}>
-          <NavIcon d={<><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06-.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></>} />
-          Paramètres
-        </Link>
-        <button onClick={() => router.push('/lock')}
-          className="w-full flex items-center gap-2 mx-2 px-3 py-2 rounded-[6px] text-[13px] transition-colors"
-          style={{ color: 'var(--sidebar-text)' }}>
-          <NavIcon d={<><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></>} />
-          Verrouiller
-        </button>
-      </div>
-    </>
-  );
-
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg-dash)' }}>
+    <div className="flex h-screen bg-[#F7F7F6] overflow-hidden">
+
+      {/* ── SIDEBAR ── */}
+      <aside className={`
+        fixed inset-y-0 left-0 z-40 w-[220px] bg-[#FFFFFF] border-r border-[#E8E7E4]
+        flex flex-col transition-transform duration-200
+        lg:static lg:translate-x-0
+        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      `}>
+        {/* Logo */}
+        <div className="p-[20px_18px] border-b border-[#E8E7E4]">
+          <Link href="/dashboard" onClick={() => setSidebarOpen(false)}>
+            <span className="block text-[14px] font-medium text-[#1A1A19]">Melanie Services&amp;Prest.</span>
+            <span className="block text-[11px] text-[#6B6A67] mt-[1px]">Espace de gestion</span>
+          </Link>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 py-[12px] overflow-y-auto">
+          {NAV_ITEMS.map(item => {
+            const active = isActive(item);
+            const badge  = item.id === 'messages'
+              ? unreadMsgs
+              : item.id === 'notifications'
+              ? unreadNotifs
+              : 0;
+
+            return (
+              <Link
+                key={item.id}
+                href={item.href}
+                onClick={() => setSidebarOpen(false)}
+                className={`flex items-center gap-[10px] px-[14px] py-[9px] mx-[6px] rounded-[6px] text-[13px] transition-colors mb-[1px] ${
+                  active
+                    ? 'bg-[#F7F7F6] text-[#1A1A19] font-medium'
+                    : 'text-[#6B6A67] hover:bg-[#F7F7F6] hover:text-[#1A1A19]'
+                }`}
+              >
+                <span className={`flex-shrink-0 ${active ? 'text-[#1A3A5C]' : ''}`}>
+                  {item.icon}
+                </span>
+                <span className="flex-1">{item.label}</span>
+                {badge > 0 && (
+                  <span className="bg-[#1A3A5C] text-[#FFFFFF] text-[10px] px-[6px] py-[1px] rounded-full min-w-[18px] text-center">
+                    {badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+
+          {/* Notifications séparément */}
+          <Link href="/dashboard/notifications" onClick={() => setSidebarOpen(false)}
+            className={`flex items-center gap-[10px] px-[14px] py-[9px] mx-[6px] rounded-[6px] text-[13px] transition-colors mb-[1px] ${
+              pathname === '/dashboard/notifications'
+                ? 'bg-[#F7F7F6] text-[#1A1A19] font-medium'
+                : 'text-[#6B6A67] hover:bg-[#F7F7F6] hover:text-[#1A1A19]'
+            }`}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 01-3.46 0"/>
+            </svg>
+            <span className="flex-1">Notifications</span>
+            {unreadNotifs > 0 && (
+              <span className="bg-[#9B2335] text-[#FFFFFF] text-[10px] px-[6px] py-[1px] rounded-full min-w-[18px] text-center">
+                {unreadNotifs}
+              </span>
+            )}
+          </Link>
+        </nav>
+
+        {/* User info bas sidebar */}
+        <div className="border-t border-[#E8E7E4] p-[12px_14px]" ref={userMenuRef}>
+          <button
+            onClick={() => setShowUserMenu(!showUserMenu)}
+            className="w-full flex items-center gap-[10px] rounded-[6px] p-[6px_8px] hover:bg-[#F7F7F6] transition-colors"
+          >
+            <div className="w-[30px] h-[30px] rounded-full bg-[#1A3A5C] flex items-center justify-center text-[11px] font-medium text-[#FFFFFF] flex-shrink-0">
+              {userInitials}
+            </div>
+            <div className="flex-1 text-left min-w-0">
+              <div className="text-[12px] font-medium text-[#1A1A19] truncate">
+                {session?.user?.name || 'Administrateur'}
+              </div>
+              <div className="text-[10px] text-[#6B6A67] truncate">
+                {session?.user?.email || ''}
+              </div>
+            </div>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#6B6A67" strokeWidth="1.5" strokeLinecap="round"
+              className={`flex-shrink-0 transition-transform ${showUserMenu ? 'rotate-180' : ''}`}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          {showUserMenu && (
+            <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[8px] mt-[6px] overflow-hidden shadow-sm">
+              <Link href="/dashboard/settings" onClick={() => { setShowUserMenu(false); setSidebarOpen(false); }}
+                className="flex items-center gap-[8px] px-[12px] py-[8px] text-[12px] text-[#1A1A19] hover:bg-[#F7F7F6] transition-colors">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                </svg>
+                Paramètres
+              </Link>
+              <button onClick={() => signOut({ callbackUrl: '/login' })}
+                className="w-full flex items-center gap-[8px] px-[12px] py-[8px] text-[12px] text-[#9B2335] hover:bg-[#F7F7F6] transition-colors">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/>
+                  <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                Se déconnecter
+              </button>
+            </div>
+          )}
+        </div>
+      </aside>
 
       {/* Overlay mobile */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/50 md:hidden" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 z-30 bg-black/30 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
-      {/* Sidebar desktop */}
-      <aside className="hidden md:flex w-[220px] flex-shrink-0 flex-col" style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' }}>
-        <SidebarContent />
-      </aside>
-
-      {/* Sidebar mobile (drawer) */}
-      {sidebarOpen && (
-        <aside className="fixed top-0 left-0 bottom-0 z-50 w-[280px] flex flex-col shadow-2xl md:hidden animate-fade-in"
-          style={{ background: 'var(--sidebar-bg)' }}>
-          <div className="flex justify-end p-4">
-            <button onClick={() => setSidebarOpen(false)} className="text-[var(--text-muted)]">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-              </svg>
-            </button>
-          </div>
-          <SidebarContent />
-        </aside>
-      )}
-
-      {/* Zone principale */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      {/* ── MAIN CONTENT ── */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Topbar */}
-        <header className="h-[52px] flex-shrink-0 flex items-center justify-between px-4 md:px-6"
-          style={{ background: 'var(--topbar-bg)', borderBottom: '1px solid var(--topbar-border)' }}>
+        <header className="bg-[#FFFFFF] border-b border-[#E8E7E4] px-[20px] py-[14px] flex items-center justify-between flex-shrink-0">
+          {/* Burger mobile */}
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="lg:hidden p-[6px] rounded-[6px] hover:bg-[#F7F7F6] transition-colors"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1A1A19" strokeWidth="1.5" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <line x1="3" y1="12" x2="21" y2="12"/>
+              <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
 
-          <div className="flex items-center gap-3">
-            {/* Hamburger mobile */}
-            <button onClick={() => setSidebarOpen(true)} className="md:hidden" style={{ color: 'var(--text-secondary)' }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+          <h1 className="text-[16px] font-medium text-[#1A1A19]">{pageTitle}</h1>
+
+          {/* Actions topbar */}
+          <div className="flex items-center gap-[10px]">
+            {/* Cloche notifications */}
+            <Link href="/dashboard/notifications"
+              className="relative p-[6px] rounded-[6px] hover:bg-[#F7F7F6] transition-colors">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6B6A67" strokeWidth="1.5" strokeLinecap="round">
+                <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 01-3.46 0"/>
               </svg>
-            </button>
-            <h1 className="text-[15px] font-medium" style={{ color: 'var(--text-primary)' }}>{pageTitle}</h1>
-          </div>
-
-          <div className="flex items-center gap-2 md:gap-3">
-            {/* Timer */}
-            <div className={`flex items-center gap-1 rounded-[6px] px-2 py-1 text-[11px] border transition-colors ${timeLeft < 10 ? 'animate-pulse' : ''}`}
-              style={{
-                background: timeLeft < 10 ? 'var(--red-bg)' : 'var(--bg-surface)',
-                borderColor: timeLeft < 10 ? 'var(--red)' : 'var(--border)',
-                color: timeLeft < 10 ? 'var(--red)' : 'var(--text-muted)',
-              }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>
-              </svg>
-              <span className="hidden sm:inline">{timeLeft}s</span>
-            </div>
-
-            {/* Dark mode toggle */}
-            <button onClick={toggleDark}
-              className="w-8 h-8 flex items-center justify-center rounded-full border transition-colors"
-              style={{ borderColor: 'var(--border)', color: 'var(--text-secondary)' }}>
-              {dark ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
-                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-                  <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
-                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-                </svg>
-              ) : (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                  <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
-                </svg>
+              {unreadNotifs > 0 && (
+                <span className="absolute -top-[2px] -right-[2px] w-[14px] h-[14px] bg-[#9B2335] text-[#FFFFFF] text-[9px] rounded-full flex items-center justify-center">
+                  {unreadNotifs > 9 ? '9+' : unreadNotifs}
+                </span>
               )}
-            </button>
-
-            {/* Nouveau partenaire */}
-            <Link href="/dashboard/partners/new"
-              className="hidden sm:inline-flex items-center gap-1 border px-3 py-1.5 rounded-[6px] text-[12px] transition-colors"
-              style={{ borderColor: 'var(--gold-border)', color: 'var(--gold)' }}>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-              </svg>
-              Partenaire
             </Link>
-
-            {/* Avatar */}
-            <div className="relative">
-              <button onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-[12px] font-medium text-white"
-                style={{ background: 'var(--navy)' }}>
-                {userInitials}
-              </button>
-              {dropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
-                  <div className="absolute right-0 mt-2 w-[150px] rounded-[8px] border shadow-lg z-50 py-1 animate-fade-in"
-                    style={{ background: 'var(--bg-card)', borderColor: 'var(--border)' }}>
-                    <Link href="/dashboard/settings" onClick={() => setDropdownOpen(false)}
-                      className="block px-4 py-2 text-[13px] transition-colors hover:bg-[var(--bg-surface)]"
-                      style={{ color: 'var(--text-primary)' }}>
-                      Mon profil
-                    </Link>
-                    <button onClick={() => signOut({ callbackUrl: '/login' })}
-                      className="w-full text-left px-4 py-2 text-[13px] transition-colors hover:bg-[var(--bg-surface)]"
-                      style={{ color: 'var(--red)' }}>
-                      Se déconnecter
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
           </div>
         </header>
 
-        {/* Contenu */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6" style={{ background: 'var(--bg-dash)' }}>
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-[24px]">
           {children}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
