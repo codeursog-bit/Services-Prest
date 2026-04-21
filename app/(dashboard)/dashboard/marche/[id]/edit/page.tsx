@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
-const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
-const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+const ic = "w-full px-[13px] py-[9px] border border-[var(--border)] rounded-[8px] text-[13px] bg-[var(--bg-input)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all focus:border-[var(--accent-primary)] focus:ring-[3px] focus:ring-[var(--accent-ring)]";
+const lc = "block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]";
 
 export default function EditMarchePage({ params }: { params: { id: string } }) {
   const router  = useRouter();
@@ -54,22 +54,22 @@ export default function EditMarchePage({ params }: { params: { id: string } }) {
     });
   };
 
-  if (loading) return <DashboardLayout pageTitle="Chargement…"><div className="p-[48px] text-center text-[13px] text-[#6B6A67]">Chargement…</div></DashboardLayout>;
-  if (!market) return <DashboardLayout pageTitle="Introuvable"><div className="p-[48px] text-center text-[13px] text-[#9B2335]">Marché introuvable.</div></DashboardLayout>;
+  if (loading) return <DashboardLayout pageTitle="Chargement…"><div className="p-[48px] text-center text-[13px] text-[var(--text-secondary)]">Chargement…</div></DashboardLayout>;
+  if (!market) return <DashboardLayout pageTitle="Introuvable"><div className="p-[48px] text-center text-[13px] text-[var(--msp-red)]">Marché introuvable.</div></DashboardLayout>;
 
   return (
     <DashboardLayout pageTitle={`Modifier — ${market.name}`}>
       <div className="max-w-[680px] mx-auto">
-        <Link href={`/dashboard/marche/${params.id}`} className="inline-block text-[12px] text-[#6B6A67] hover:text-[#1A1A19] mb-[32px]">
+        <Link href={`/dashboard/marche/${params.id}`} className="inline-block text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-[32px]">
           ← Retour au marché
         </Link>
 
-        {error   && <div className="mb-[16px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[12px] text-[13px] text-[#9B2335]">{error}</div>}
-        {success && <div className="mb-[16px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[12px] text-[13px] text-[#2D6A4F]">Modifications enregistrées.</div>}
+        {error   && <div className="mb-[16px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-red)]">{error}</div>}
+        {success && <div className="mb-[16px] bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-green)]">Modifications enregistrées.</div>}
 
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[32px_36px]">
-          <h2 className="text-[18px] font-medium text-[#1A1A19] mb-[28px]">Modifier le marché</h2>
-          <div className="h-[1px] bg-[#E8E7E4] mb-[28px]"></div>
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[32px_36px]">
+          <h2 className="text-[18px] font-medium text-[var(--text-primary)] mb-[28px]">Modifier le marché</h2>
+          <div className="h-[1px] bg-[var(--border)] mb-[28px]"></div>
 
           <form onSubmit={handleSubmit}>
             <div className="mb-[20px]">
@@ -111,11 +111,11 @@ export default function EditMarchePage({ params }: { params: { id: string } }) {
 
             <div className="flex justify-end gap-[12px] mt-[28px]">
               <Link href={`/dashboard/marche/${params.id}`}
-                className="border border-[#E8E7E4] text-[#1A1A19] bg-[#FFFFFF] py-[10px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#F7F7F6] transition-colors">
+                className="border border-[var(--border)] text-[var(--text-primary)] bg-[var(--bg-card)] py-[10px] px-[16px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--bg-surface)] transition-colors">
                 Annuler
               </Link>
               <button type="submit" disabled={isPending || success}
-                className={`bg-[#1A3A5C] text-[#FFFFFF] py-[10px] px-[16px] rounded-[6px] text-[13px] font-medium transition-colors ${isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[#142d4a]'}`}>
+                className={`bg-[var(--accent-primary)] text-[var(--bg-card)] py-[10px] px-[16px] rounded-[8px] text-[13px] font-medium transition-colors ${isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[var(--msp-blue-mid)]'}`}>
                 {isPending ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </div>

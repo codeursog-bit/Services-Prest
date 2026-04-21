@@ -10,9 +10,9 @@ interface Invoice {
 }
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
-  NON_SOLDE: { label: 'Non soldé', cls: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]' },
-  EN_COURS:  { label: 'En cours',  cls: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]' },
-  PAYE:      { label: 'Payé',      cls: 'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]' },
+  NON_SOLDE: { label: 'Non soldé', cls: 'border-[var(--msp-red)] text-[var(--msp-red)] bg-[var(--msp-red-light)]' },
+  EN_COURS:  { label: 'En cours',  cls: 'border-[var(--msp-amber)] text-[var(--msp-amber)] bg-[var(--msp-amber-light)]' },
+  PAYE:      { label: 'Payé',      cls: 'border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)]' },
 };
 
 export default function BanquesTab({ partnerId }: { partnerId: string }) {
@@ -25,8 +25,8 @@ export default function BanquesTab({ partnerId }: { partnerId: string }) {
   const [success, setSuccess]     = useState('');
   const [isPending, startT]       = useTransition();
 
-  const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[13px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
-  const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[5px]";
+  const ic = "w-full p-[10px_14px] border border-[var(--border)] rounded-[8px] text-[13px] bg-[var(--bg-card)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors";
+  const lc = "block text-[12px] font-medium text-[var(--text-primary)] mb-[5px]";
 
   const load = () => {
     fetch(`/api/invoices?partnerId=${partnerId}`)
@@ -105,44 +105,44 @@ export default function BanquesTab({ partnerId }: { partnerId: string }) {
       {/* MÉTRIQUES */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-[10px] mb-[20px]">
         {[
-          { label: 'Total facturé',  val: formatAmount(total),     color: 'text-[#1A1A19]' },
-          { label: 'Encaissé',       val: formatAmount(totalPaye), color: 'text-[#2D6A4F]' },
-          { label: 'En attente',     val: formatAmount(nonSolde),  color: nonSolde > 0 ? 'text-[#8B4513]' : 'text-[#1A1A19]' },
-          { label: 'Factures',       val: invoices.length,         color: 'text-[#1A1A19]' },
+          { label: 'Total facturé',  val: formatAmount(total),     color: 'text-[var(--text-primary)]' },
+          { label: 'Encaissé',       val: formatAmount(totalPaye), color: 'text-[var(--msp-green)]' },
+          { label: 'En attente',     val: formatAmount(nonSolde),  color: nonSolde > 0 ? 'text-[var(--msp-amber)]' : 'text-[var(--text-primary)]' },
+          { label: 'Factures',       val: invoices.length,         color: 'text-[var(--text-primary)]' },
         ].map(k => (
-          <div key={k.label} className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[14px_16px]">
+          <div key={k.label} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[14px_16px]">
             <div className={`text-[18px] font-medium ${k.color}`}>{k.val}</div>
-            <div className="text-[12px] text-[#6B6A67] mt-[3px]">{k.label}</div>
+            <div className="text-[12px] text-[var(--text-secondary)] mt-[3px]">{k.label}</div>
           </div>
         ))}
       </div>
 
       {/* FEEDBACK */}
-      {success && <div className="mb-[12px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[10px] text-[13px] text-[#2D6A4F]">{success}</div>}
-      {error   && <div className="mb-[12px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[10px] text-[13px] text-[#9B2335]">{error}</div>}
+      {success && <div className="mb-[12px] bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[8px] p-[10px] text-[13px] text-[var(--msp-green)]">{success}</div>}
+      {error   && <div className="mb-[12px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[10px] text-[13px] text-[var(--msp-red)]">{error}</div>}
 
       {/* BARRE */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-[10px] mb-[16px]">
         <div className="flex gap-[6px] flex-wrap">
           {['Tous', 'NON_SOLDE', 'EN_COURS', 'PAYE'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`py-[5px] px-[10px] rounded-[6px] text-[12px] border transition-colors ${
-                filter === f ? 'bg-[#1A3A5C] border-[#1A3A5C] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#E8E7E4] text-[#6B6A67] hover:border-[#1A3A5C]'
+              className={`py-[5px] px-[10px] rounded-[8px] text-[12px] border transition-colors ${
+                filter === f ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[#FFFFFF]' : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]'
               }`}>
               {f === 'Tous' ? 'Toutes' : STATUS_CFG[f]?.label}
             </button>
           ))}
         </div>
         <button onClick={() => { setShowForm(!showForm); setEditInv(null); }}
-          className="flex-shrink-0 bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[14px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] transition-colors">
+          className="flex-shrink-0 bg-[var(--accent-primary)] text-[#FFFFFF] py-[8px] px-[14px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--msp-blue-mid)] transition-colors">
           {showForm ? 'Annuler' : '+ Nouvelle facture'}
         </button>
       </div>
 
       {/* FORMULAIRE */}
       {(showForm || editInv) && (
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px] mb-[20px]">
-          <h3 className="text-[14px] font-medium text-[#1A1A19] mb-[16px]">{editInv ? `Modifier ${editInv.ref}` : 'Nouvelle facture'}</h3>
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[20px] mb-[20px]">
+          <h3 className="text-[14px] font-medium text-[var(--text-primary)] mb-[16px]">{editInv ? `Modifier ${editInv.ref}` : 'Nouvelle facture'}</h3>
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
               <div>
@@ -183,9 +183,9 @@ export default function BanquesTab({ partnerId }: { partnerId: string }) {
             </div>
             <div className="flex gap-[10px] justify-end">
               <button type="button" onClick={() => { setShowForm(false); setEditInv(null); }}
-                className="border border-[#E8E7E4] text-[#1A1A19] py-[8px] px-[12px] rounded-[6px] text-[12px] hover:bg-[#F7F7F6]">Annuler</button>
+                className="border border-[var(--border)] text-[var(--text-primary)] py-[8px] px-[12px] rounded-[8px] text-[12px] hover:bg-[var(--bg-surface)]">Annuler</button>
               <button type="submit" disabled={isPending}
-                className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[14px] rounded-[6px] text-[12px] font-medium hover:bg-[#142d4a] disabled:opacity-60">
+                className="bg-[var(--accent-primary)] text-[#FFFFFF] py-[8px] px-[14px] rounded-[8px] text-[12px] font-medium hover:bg-[var(--msp-blue-mid)] disabled:opacity-60">
                 {isPending ? 'Enregistrement…' : editInv ? 'Modifier' : 'Créer'}
               </button>
             </div>
@@ -194,21 +194,21 @@ export default function BanquesTab({ partnerId }: { partnerId: string }) {
       )}
 
       {/* TABLEAU */}
-      <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] overflow-hidden">
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] overflow-hidden">
         {loading ? (
-          <div className="p-[32px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+          <div className="p-[32px] text-center text-[13px] text-[var(--text-secondary)]">Chargement…</div>
         ) : filtered.length === 0 ? (
-          <div className="p-[32px] text-center text-[13px] text-[#6B6A67]">Aucune facture.</div>
+          <div className="p-[32px] text-center text-[13px] text-[var(--text-secondary)]">Aucune facture.</div>
         ) : (
           <table className="w-full text-left">
-            <thead className="bg-[#F7F7F6] border-b border-[#E8E7E4]">
+            <thead className="bg-[var(--bg-surface)] border-b border-[var(--border)]">
               <tr>
-                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Référence</th>
-                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Description</th>
-                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67] text-right">Montant</th>
-                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Dates</th>
-                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Statut</th>
-                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[#6B6A67] text-right">Actions</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Référence</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Description</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)] text-right">Montant</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Dates</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Statut</th>
+                <th className="py-[11px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)] text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -216,22 +216,22 @@ export default function BanquesTab({ partnerId }: { partnerId: string }) {
                 const late = inv.dueDate && isOverdue(inv.dueDate) && inv.status !== 'PAYE';
                 const cfg  = STATUS_CFG[inv.status] || STATUS_CFG.NON_SOLDE;
                 return (
-                  <tr key={inv.id} className="border-b border-[#E8E7E4] hover:bg-[#F7F7F6]">
+                  <tr key={inv.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-surface)]">
                     <td className="py-[12px] px-[16px]">
-                      <span className="text-[13px] font-medium text-[#1A1A19]">{inv.ref}</span>
+                      <span className="text-[13px] font-medium text-[var(--text-primary)]">{inv.ref}</span>
                     </td>
                     <td className="py-[12px] px-[16px]">
-                      <span className="text-[12px] text-[#1A1A19] block truncate max-w-[160px]">{inv.description}</span>
-                      {inv.notes && <span className="text-[11px] text-[#8B4513] italic block mt-[1px]">{inv.notes}</span>}
+                      <span className="text-[12px] text-[var(--text-primary)] block truncate max-w-[160px]">{inv.description}</span>
+                      {inv.notes && <span className="text-[11px] text-[var(--msp-amber)] italic block mt-[1px]">{inv.notes}</span>}
                     </td>
                     <td className="py-[12px] px-[16px] text-right">
-                      <span className="text-[13px] font-medium text-[#1A1A19]">{formatAmount(inv.amount)}</span>
-                      <span className="text-[11px] text-[#6B6A67] ml-[2px]">FCFA</span>
+                      <span className="text-[13px] font-medium text-[var(--text-primary)]">{formatAmount(inv.amount)}</span>
+                      <span className="text-[11px] text-[var(--text-secondary)] ml-[2px]">FCFA</span>
                     </td>
                     <td className="py-[12px] px-[16px]">
-                      <div className="text-[12px] text-[#6B6A67]">{formatDateShort(inv.issueDate)}</div>
+                      <div className="text-[12px] text-[var(--text-secondary)]">{formatDateShort(inv.issueDate)}</div>
                       {inv.dueDate && (
-                        <div className={`text-[11px] mt-[1px] ${late ? 'text-[#9B2335] font-medium' : 'text-[#6B6A67]'}`}>
+                        <div className={`text-[11px] mt-[1px] ${late ? 'text-[var(--msp-red)] font-medium' : 'text-[var(--text-secondary)]'}`}>
                           Éch. {formatDateShort(inv.dueDate)} {late ? '⚠' : ''}
                         </div>
                       )}
@@ -240,7 +240,7 @@ export default function BanquesTab({ partnerId }: { partnerId: string }) {
                       <select value={inv.status}
                         onChange={e => handleStatusChange(inv.id, e.target.value)}
                         disabled={isPending}
-                        className={`border rounded-[4px] py-[2px] px-[6px] text-[11px] cursor-pointer focus:outline-none disabled:opacity-50 ${cfg.cls}`}>
+                        className={`border rounded-[6px] py-[2px] px-[6px] text-[11px] cursor-pointer focus:outline-none disabled:opacity-50 ${cfg.cls}`}>
                         <option value="NON_SOLDE">Non soldé</option>
                         <option value="EN_COURS">En cours</option>
                         <option value="PAYE">Payé</option>
@@ -250,24 +250,24 @@ export default function BanquesTab({ partnerId }: { partnerId: string }) {
                       <div className="flex gap-[8px] justify-end">
                         {late && (
                           <button onClick={() => handleReminder(inv.id, inv.ref)} disabled={isPending}
-                            className="text-[11px] text-[#9B2335] hover:underline disabled:opacity-50">Relancer</button>
+                            className="text-[11px] text-[var(--msp-red)] hover:underline disabled:opacity-50">Relancer</button>
                         )}
                         <button onClick={() => { setEditInv(inv); setShowForm(false); }} disabled={isPending}
-                          className="text-[12px] text-[#6B6A67] hover:underline disabled:opacity-50">Modifier</button>
+                          className="text-[12px] text-[var(--text-secondary)] hover:underline disabled:opacity-50">Modifier</button>
                         <button onClick={() => handleDelete(inv.id, inv.ref)} disabled={isPending}
-                          className="text-[12px] text-[#9B2335] hover:underline disabled:opacity-50">Supprimer</button>
+                          className="text-[12px] text-[var(--msp-red)] hover:underline disabled:opacity-50">Supprimer</button>
                       </div>
                     </td>
                   </tr>
                 );
               })}
             </tbody>
-            <tfoot className="bg-[#F7F7F6]">
+            <tfoot className="bg-[var(--bg-surface)]">
               <tr>
-                <td colSpan={2} className="py-[10px] px-[16px] text-[12px] font-medium text-[#1A1A19]">Total</td>
+                <td colSpan={2} className="py-[10px] px-[16px] text-[12px] font-medium text-[var(--text-primary)]">Total</td>
                 <td className="py-[10px] px-[16px] text-right">
-                  <span className="text-[13px] font-medium text-[#1A1A19]">{formatAmount(filtered.reduce((s, i) => s + i.amount, 0))}</span>
-                  <span className="text-[11px] text-[#6B6A67] ml-[2px]">FCFA</span>
+                  <span className="text-[13px] font-medium text-[var(--text-primary)]">{formatAmount(filtered.reduce((s, i) => s + i.amount, 0))}</span>
+                  <span className="text-[11px] text-[var(--text-secondary)] ml-[2px]">FCFA</span>
                 </td>
                 <td colSpan={3}></td>
               </tr>

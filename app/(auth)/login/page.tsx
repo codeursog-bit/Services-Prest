@@ -33,43 +33,46 @@ export default function LoginPage() {
     }
   };
 
-  const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
+  const ic = "w-full px-[13px] py-[9px] border border-[var(--border)] rounded-[8px] text-[13px] bg-[var(--bg-input)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all focus:border-[var(--accent-primary)] focus:ring-[3px] focus:ring-[var(--accent-ring)]";
 
   return (
-    <div className="flex min-h-screen bg-[#FFFFFF]">
+    <div className="flex min-h-screen" style={{ background: "var(--bg-root)" }}>
 
       {/* GAUCHE — Branding desktop */}
-      <div className="hidden lg:flex flex-col items-center justify-center w-1/2 bg-[#1A3A5C] h-screen sticky top-0 px-[48px] text-center">
-        <h1 className="text-[22px] font-medium text-[#FFFFFF]">Melanie Services&amp;Prest.</h1>
-        <span className="text-[13px] text-[#FFFFFF] opacity-60 mt-[6px]">Votre partenaire idéal !</span>
-        <div className="h-[1px] bg-[#FFFFFF] opacity-15 w-[40px] my-[28px]"></div>
-        <p className="text-[13px] text-[#FFFFFF] opacity-50 leading-[1.8] max-w-[240px]">
+      <div className="hidden lg:flex flex-col items-center justify-center w-1/2 h-screen sticky top-0 px-[48px] text-center relative overflow-hidden" style={{ background: "linear-gradient(145deg, #0F2744 0%, #1A3A5C 50%, #1e4a73 100%)" }}>
+        <div className="w-16 h-16 rounded-[16px] bg-white/10 flex items-center justify-center mb-6 overflow-hidden">
+            <img src="/logo.png" alt="MSP" className="w-full h-full object-contain" onError={(e) => { (e.target as HTMLImageElement).style.display="none"; }} />
+          </div>
+          <h1 className="text-[22px] font-semibold text-white">Melanie Services&amp;Prest.</h1>
+        <span className="text-[13px] text-[var(--bg-card)] opacity-60 mt-[6px]">Votre partenaire idéal !</span>
+        <div className="h-[1px] w-[40px] my-[28px]" style={{ background: "rgba(255,255,255,0.2)" }}></div>
+        <p className="text-[13px] text-[var(--bg-card)] opacity-50 leading-[1.8] max-w-[240px]">
           Accès sécurisé à votre espace de gestion des partenaires et du suivi de marchés.
         </p>
       </div>
 
       {/* DROITE — Formulaire */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-[24px] lg:px-[10%] h-screen overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-[24px] lg:px-[10%] h-screen overflow-y-auto relative">
         <div className="w-full max-w-[380px]">
 
           {/* Mobile branding */}
           <div className="lg:hidden mb-[32px] text-center">
-            <h1 className="text-[18px] font-medium text-[#1A1A19]">Melanie Services&amp;Prest.</h1>
-            <span className="text-[12px] text-[#6B6A67]">Votre partenaire idéal !</span>
+            <h1 className="text-[18px] font-medium text-[var(--text-primary)]">Melanie Services&amp;Prest.</h1>
+            <span className="text-[12px] text-[var(--text-secondary)]">Votre partenaire idéal !</span>
           </div>
 
-          <h2 className="text-[20px] font-medium text-[#1A1A19] mb-[8px]">Connexion</h2>
-          <p className="text-[13px] text-[#6B6A67] mb-[28px]">Accédez à votre espace de gestion.</p>
+          <h2 className="text-[20px] font-medium text-[var(--text-primary)] mb-[8px]">Connexion</h2>
+          <p className="text-[13px] text-[var(--text-secondary)] mb-[28px]">Accédez à votre espace de gestion.</p>
 
           {error && (
-            <div className="mb-[20px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[12px] text-[13px] text-[#9B2335]">
+            <div className="mb-[20px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-red)]">
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-[16px]">
             <div>
-              <label className="block text-[12px] font-medium text-[#1A1A19] mb-[6px]">Adresse email</label>
+              <label className="block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]">Adresse email</label>
               <input
                 type="email" required autoComplete="email"
                 value={email} onChange={e => setEmail(e.target.value)}
@@ -80,8 +83,8 @@ export default function LoginPage() {
 
             <div>
               <div className="flex justify-between items-center mb-[6px]">
-                <label className="text-[12px] font-medium text-[#1A1A19]">Mot de passe</label>
-                <Link href="/forgot-password" className="text-[12px] text-[#1A3A5C] hover:underline">
+                <label className="text-[12px] font-medium text-[var(--text-primary)]">Mot de passe</label>
+                <Link href="/forgot-password" className="text-[12px] text-[var(--accent-primary)] hover:underline">
                   Mot de passe oublié ?
                 </Link>
               </div>
@@ -93,7 +96,7 @@ export default function LoginPage() {
                   className={`${ic} pr-[40px]`}
                 />
                 <button type="button" onClick={() => setShowPass(!showPass)}
-                  className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[#6B6A67] hover:text-[#1A1A19] transition-colors">
+                  className="absolute right-[12px] top-1/2 -translate-y-1/2 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
                   {showPass ? (
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                       <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
@@ -110,8 +113,8 @@ export default function LoginPage() {
             </div>
 
             <button type="submit" disabled={loading}
-              className={`w-full bg-[#1A3A5C] text-[#FFFFFF] py-[11px] rounded-[6px] text-[14px] font-medium transition-colors mt-[4px] ${
-                loading ? 'opacity-70 cursor-wait' : 'hover:bg-[#142d4a]'
+              className={`w-full bg-[var(--accent-primary)] text-[var(--bg-card)] py-[11px] rounded-[8px] text-[14px] font-medium transition-colors mt-[4px] ${
+                loading ? 'opacity-70 cursor-wait' : 'hover:bg-[var(--msp-blue-mid)]'
               }`}>
               {loading ? 'Connexion en cours…' : 'Se connecter'}
             </button>

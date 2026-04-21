@@ -3,8 +3,8 @@
 import { useState, useEffect, useTransition } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
-const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#3D3B8E] transition-colors";
-const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+const ic = "w-full px-[13px] py-[9px] border border-[var(--border)] rounded-[8px] text-[13px] bg-[var(--bg-input)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all focus:border-[var(--accent-primary)] focus:ring-[3px] focus:ring-[var(--accent-ring)]";
+const lc = "block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]";
 
 export default function SettingsPage() {
   const [user, setUser]           = useState<any>(null);
@@ -91,10 +91,10 @@ export default function SettingsPage() {
 
   const FeedbackBar = ({ section }: { section: string }) =>
     feedback.section === section && feedback.msg ? (
-      <div className={`mb-[16px] rounded-[6px] p-[10px_14px] text-[13px] border ${
+      <div className={`mb-[16px] rounded-[8px] p-[10px_14px] text-[13px] border ${
         feedback.ok
-          ? 'bg-[#EAF3DE] border-[#2D6A4F] text-[#2D6A4F]'
-          : 'bg-[#FCEBEB] border-[#9B2335] text-[#9B2335]'
+          ? 'bg-[var(--msp-green-light)] border-[var(--msp-green)] text-[var(--msp-green)]'
+          : 'bg-[var(--msp-red-light)] border-[var(--msp-red)] text-[var(--msp-red)]'
       }`}>{feedback.msg}</div>
     ) : null;
 
@@ -103,8 +103,8 @@ export default function SettingsPage() {
       <div className="max-w-[720px] mx-auto flex flex-col gap-[16px]">
 
         {/* ── SECTION PROFIL ── */}
-        <section className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[28px]">
-          <h2 className="text-[15px] font-medium text-[#1A1A19] mb-[20px]">Profil administrateur</h2>
+        <section className="msp-card p-[28px]">
+          <h2 className="text-[15px] font-medium text-[var(--text-primary)] mb-[20px]">Profil administrateur</h2>
           <FeedbackBar section="profile" />
           <form onSubmit={handleProfile} className="flex flex-col gap-[16px]">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[16px]">
@@ -118,14 +118,14 @@ export default function SettingsPage() {
               </div>
               <div>
                 <label className={lc}>Adresse email</label>
-                <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[6px] p-[10px_14px] text-[13px] text-[#6B6A67]">
+                <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-[8px] p-[10px_14px] text-[13px] text-[var(--text-secondary)]">
                   {user?.email || '—'} <span className="text-[11px]">(non modifiable)</span>
                 </div>
               </div>
             </div>
             <div className="flex justify-end">
               <button type="submit" disabled={isPending}
-                className="bg-[#3D3B8E] text-[#FFFFFF] py-[9px] px-[18px] rounded-[6px] text-[13px] font-medium hover:bg-[#2e2c72] transition-colors disabled:opacity-60">
+                className="bg-[var(--accent-primary)] text-[var(--bg-card)] py-[9px] px-[18px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--msp-blue-mid)] transition-colors disabled:opacity-60">
                 {isPending ? 'Enregistrement…' : 'Enregistrer'}
               </button>
             </div>
@@ -133,9 +133,9 @@ export default function SettingsPage() {
         </section>
 
         {/* ── SECTION MOT DE PASSE ── */}
-        <section className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[28px]">
-          <h2 className="text-[15px] font-medium text-[#1A1A19] mb-[6px]">Sécurité</h2>
-          <p className="text-[12px] text-[#6B6A67] mb-[20px]">Changez votre mot de passe de connexion.</p>
+        <section className="msp-card p-[28px]">
+          <h2 className="text-[15px] font-medium text-[var(--text-primary)] mb-[6px]">Sécurité</h2>
+          <p className="text-[12px] text-[var(--text-secondary)] mb-[20px]">Changez votre mot de passe de connexion.</p>
           <FeedbackBar section="password" />
           <form onSubmit={handlePassword} className="flex flex-col gap-[14px]">
             <div>
@@ -154,7 +154,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex justify-end">
               <button type="submit" disabled={isPending}
-                className="border border-[#E8E7E4] text-[#1A1A19] py-[9px] px-[18px] rounded-[6px] text-[13px] font-medium hover:bg-[#F7F7F6] transition-colors disabled:opacity-60">
+                className="border border-[var(--border)] text-[var(--text-primary)] py-[9px] px-[18px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--bg-surface)] transition-colors disabled:opacity-60">
                 {isPending ? 'Modification…' : 'Changer le mot de passe'}
               </button>
             </div>
@@ -162,31 +162,31 @@ export default function SettingsPage() {
         </section>
 
         {/* ── SECTION PIN ── */}
-        <section className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[28px]">
-          <h2 className="text-[15px] font-medium text-[#1A1A19] mb-[6px]">Code PIN de verrouillage</h2>
-          <p className="text-[12px] text-[#6B6A67] mb-[20px]">
+        <section className="msp-card p-[28px]">
+          <h2 className="text-[15px] font-medium text-[var(--text-primary)] mb-[6px]">Code PIN de verrouillage</h2>
+          <p className="text-[12px] text-[var(--text-secondary)] mb-[20px]">
             Après 5 minutes d&apos;inactivité, votre session sera verrouillée. Le PIN permet de la reprendre sans se reconnecter.
           </p>
           <FeedbackBar section="pin" />
 
           <div className="flex flex-col sm:flex-row gap-[24px] items-start mb-[20px]">
             <div>
-              <span className="block text-[12px] font-medium text-[#1A1A19] mb-[10px]">Nouveau PIN</span>
+              <span className="block text-[12px] font-medium text-[var(--text-primary)] mb-[10px]">Nouveau PIN</span>
               <div className="flex gap-[10px]">
                 {pin.map((d, i) => (
                   <input key={i} type="text" inputMode="numeric" maxLength={1} value={d}
                     onChange={e => handlePinInput(i, e.target.value, false)}
-                    className="w-[52px] h-[52px] text-center text-[22px] font-medium text-[#1A1A19] bg-[#FFFFFF] border border-[#E8E7E4] rounded-[6px] focus:outline-none focus:border-[#3D3B8E] transition-colors" />
+                    className="w-[52px] h-[52px] text-center text-[22px] font-medium text-[var(--text-primary)] bg-[var(--bg-card)] border border-[var(--border)] rounded-[8px] focus:outline-none focus:border-[var(--accent-primary)] transition-colors" />
                 ))}
               </div>
             </div>
             <div>
-              <span className="block text-[12px] font-medium text-[#1A1A19] mb-[10px]">Confirmer le PIN</span>
+              <span className="block text-[12px] font-medium text-[var(--text-primary)] mb-[10px]">Confirmer le PIN</span>
               <div className="flex gap-[10px]">
                 {confirmPin.map((d, i) => (
                   <input key={i} type="text" inputMode="numeric" maxLength={1} value={d}
                     onChange={e => handlePinInput(i, e.target.value, true)}
-                    className="w-[52px] h-[52px] text-center text-[22px] font-medium text-[#1A1A19] bg-[#FFFFFF] border border-[#E8E7E4] rounded-[6px] focus:outline-none focus:border-[#3D3B8E] transition-colors" />
+                    className="w-[52px] h-[52px] text-center text-[22px] font-medium text-[var(--text-primary)] bg-[var(--bg-card)] border border-[var(--border)] rounded-[8px] focus:outline-none focus:border-[var(--accent-primary)] transition-colors" />
                 ))}
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function SettingsPage() {
 
           <div className="flex justify-end">
             <button onClick={handlePin} disabled={isPending || pin.some(d => !d) || confirmPin.some(d => !d)}
-              className="border border-[#E8E7E4] text-[#1A1A19] py-[9px] px-[18px] rounded-[6px] text-[13px] font-medium hover:bg-[#F7F7F6] transition-colors disabled:opacity-40">
+              className="border border-[var(--border)] text-[var(--text-primary)] py-[9px] px-[18px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--bg-surface)] transition-colors disabled:opacity-40">
               {isPending ? 'Enregistrement…' : 'Enregistrer le PIN'}
             </button>
           </div>

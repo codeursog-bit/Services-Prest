@@ -64,24 +64,24 @@ export default function LockPage() {
   const initials = session?.user?.name ? getInitials(session.user.name) : '?';
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center p-[24px]">
+    <div className="min-h-screen bg-[var(--bg-card)] flex flex-col items-center justify-center p-[24px]">
 
       {/* Logo */}
       <div className="absolute top-[24px] left-1/2 -translate-x-1/2">
-        <span className="text-[14px] font-medium text-[#1A1A19]">Melanie Services&amp;Prest.</span>
+        <span className="text-[14px] font-medium text-[var(--text-primary)]">Melanie Services&amp;Prest.</span>
       </div>
 
       <div className="w-full max-w-[360px] flex flex-col items-center">
 
         {/* Avatar */}
-        <div className="w-[56px] h-[56px] rounded-full bg-[#1A3A5C] flex items-center justify-center text-[18px] font-medium text-[#FFFFFF] mb-[16px]">
+        <div className="w-[56px] h-[56px] rounded-full bg-[var(--accent-primary)] flex items-center justify-center text-[18px] font-medium text-[var(--bg-card)] mb-[16px]">
           {initials}
         </div>
 
-        <h2 className="text-[18px] font-medium text-[#1A1A19] mb-[4px]">
+        <h2 className="text-[18px] font-medium text-[var(--text-primary)] mb-[4px]">
           {session?.user?.name || 'Session verrouillée'}
         </h2>
-        <p className="text-[13px] text-[#6B6A67] text-center mb-[36px]">
+        <p className="text-[13px] text-[var(--text-secondary)] text-center mb-[36px]">
           Entrez votre code PIN pour reprendre votre session.
         </p>
 
@@ -100,24 +100,24 @@ export default function LockPage() {
               disabled={loading}
               className={`w-[56px] h-[56px] text-center text-[24px] font-medium rounded-[8px] border transition-colors focus:outline-none disabled:opacity-50 ${
                 error
-                  ? 'border-[#9B2335] bg-[#FCEBEB] text-[#9B2335]'
-                  : 'border-[#E8E7E4] bg-[#FFFFFF] text-[#1A1A19] focus:border-[#1A3A5C]'
+                  ? 'border-[var(--msp-red)] bg-[var(--msp-red-light)] text-[var(--msp-red)]'
+                  : 'border-[var(--border)] bg-[var(--bg-card)] text-[var(--text-primary)] focus:border-[var(--accent-primary)]'
               }`}
             />
           ))}
         </div>
 
         {error && (
-          <p className="text-[13px] text-[#9B2335] mb-[16px]">Code PIN incorrect. Réessayez.</p>
+          <p className="text-[13px] text-[var(--msp-red)] mb-[16px]">Code PIN incorrect. Réessayez.</p>
         )}
         {loading && (
-          <p className="text-[13px] text-[#6B6A67] mb-[16px]">Vérification…</p>
+          <p className="text-[13px] text-[var(--text-secondary)] mb-[16px]">Vérification…</p>
         )}
 
         {/* Déconnexion */}
         <button
           onClick={() => signOut({ callbackUrl: '/login' })}
-          className="text-[12px] text-[#6B6A67] hover:text-[#1A1A19] transition-colors mt-[8px]"
+          className="text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mt-[8px]"
         >
           Se déconnecter complètement
         </button>

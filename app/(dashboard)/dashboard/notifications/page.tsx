@@ -17,21 +17,21 @@ interface Notif {
 
 const TYPE_ICON: Record<string, JSX.Element> = {
   INFO: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A3A5C" strokeWidth="1.5" strokeLinecap="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth="1.5" strokeLinecap="round">
       <circle cx="12" cy="12" r="10"/>
       <line x1="12" y1="8" x2="12" y2="12"/>
       <line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
   ),
   ALERT: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8B4513" strokeWidth="1.5" strokeLinecap="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--msp-amber)" strokeWidth="1.5" strokeLinecap="round">
       <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
       <line x1="12" y1="9" x2="12" y2="13"/>
       <line x1="12" y1="17" x2="12.01" y2="17"/>
     </svg>
   ),
   WARNING: (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9B2335" strokeWidth="1.5" strokeLinecap="round">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--msp-red)" strokeWidth="1.5" strokeLinecap="round">
       <circle cx="12" cy="12" r="10"/>
       <line x1="12" y1="8" x2="12" y2="12"/>
       <line x1="12" y1="16" x2="12.01" y2="16"/>
@@ -40,9 +40,9 @@ const TYPE_ICON: Record<string, JSX.Element> = {
 };
 
 const TYPE_BG: Record<string, string> = {
-  INFO:    'bg-[#E8EEF5]',
-  ALERT:   'bg-[#FEF3E2]',
-  WARNING: 'bg-[#FCEBEB]',
+  INFO:    'bg-[var(--msp-blue-light)]',
+  ALERT:   'bg-[var(--msp-amber-light)]',
+  WARNING: 'bg-[var(--msp-red-light)]',
 };
 
 export default function NotificationsPage() {
@@ -106,10 +106,10 @@ export default function NotificationsPage() {
             { id: 'unread', label: `Non lues (${unreadCount})` },
           ].map(f => (
             <button key={f.id} onClick={() => setFilter(f.id as any)}
-              className={`py-[6px] px-[12px] rounded-[6px] text-[12px] border transition-colors ${
+              className={`py-[6px] px-[12px] rounded-[8px] text-[12px] border transition-colors ${
                 filter === f.id
-                  ? 'bg-[#1A3A5C] border-[#1A3A5C] text-[#FFFFFF]'
-                  : 'bg-[#FFFFFF] border-[#E8E7E4] text-[#6B6A67] hover:border-[#1A3A5C]'
+                  ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--bg-card)]'
+                  : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]'
               }`}>
               {f.label}
             </button>
@@ -119,7 +119,7 @@ export default function NotificationsPage() {
           <button
             onClick={handleMarkAllRead}
             disabled={isPending}
-            className="text-[12px] text-[#1A3A5C] hover:underline disabled:opacity-50"
+            className="text-[12px] text-[var(--accent-primary)] hover:underline disabled:opacity-50"
           >
             Tout marquer comme lu
           </button>
@@ -127,24 +127,24 @@ export default function NotificationsPage() {
       </div>
 
       {/* LISTE */}
-      <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] overflow-hidden">
+      <div className="msp-card overflow-hidden">
         {loading ? (
-          <div className="p-[48px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+          <div className="p-[48px] text-center text-[13px] text-[var(--text-secondary)]">Chargement…</div>
         ) : displayed.length === 0 ? (
           <div className="p-[48px] text-center">
-            <svg className="mx-auto mb-[12px]" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E8E7E4" strokeWidth="1.2" strokeLinecap="round">
+            <svg className="mx-auto mb-[12px]" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border)" strokeWidth="1.2" strokeLinecap="round">
               <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
               <path d="M13.73 21a2 2 0 01-3.46 0"/>
             </svg>
-            <p className="text-[13px] text-[#6B6A67]">
+            <p className="text-[13px] text-[var(--text-secondary)]">
               {filter === 'unread' ? 'Aucune notification non lue.' : 'Aucune notification.'}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-[#E8E7E4]">
+          <div className="divide-y divide-[var(--border)]">
             {displayed.map(notif => (
               <div key={notif.id}
-                className={`flex items-start gap-[14px] p-[14px_20px] hover:bg-[#F7F7F6] transition-colors ${
+                className={`flex items-start gap-[14px] p-[14px_20px] hover:bg-[var(--bg-surface)] transition-colors ${
                   !notif.isRead ? 'bg-[rgba(26,58,92,0.02)]' : ''
                 }`}>
 
@@ -157,17 +157,17 @@ export default function NotificationsPage() {
 
                 {/* Contenu */}
                 <div className="flex-1 min-w-0">
-                  <p className={`text-[13px] leading-[1.5] ${notif.isRead ? 'text-[#6B6A67]' : 'text-[#1A1A19] font-medium'}`}>
+                  <p className={`text-[13px] leading-[1.5] ${notif.isRead ? 'text-[var(--text-secondary)]' : 'text-[var(--text-primary)] font-medium'}`}>
                     {notif.content}
                   </p>
                   <div className="flex flex-wrap items-center gap-[8px] mt-[4px]">
-                    <span className="text-[11px] text-[#6B6A67]">{formatDate(notif.createdAt)}</span>
+                    <span className="text-[11px] text-[var(--text-secondary)]">{formatDate(notif.createdAt)}</span>
                     {notif.partner && (
                       <>
-                        <span className="text-[#E8E7E4]">·</span>
+                        <span className="text-[var(--border)]">·</span>
                         <Link
                           href={`/dashboard/partners/${notif.partner.id}`}
-                          className="text-[11px] text-[#1A3A5C] hover:underline"
+                          className="text-[11px] text-[var(--accent-primary)] hover:underline"
                         >
                           {notif.partner.orgName}
                         </Link>
@@ -180,23 +180,23 @@ export default function NotificationsPage() {
                 <div className="flex flex-col gap-[6px] items-end flex-shrink-0">
                   {/* Point non lu */}
                   {!notif.isRead && (
-                    <div className="w-[7px] h-[7px] rounded-full bg-[#1A3A5C]"></div>
+                    <div className="w-[7px] h-[7px] rounded-full bg-[var(--accent-primary)]"></div>
                   )}
                   {notif.link && (
                     <Link href={notif.link}
                       onClick={() => !notif.isRead && handleMarkRead(notif.id)}
-                      className="text-[11px] text-[#1A3A5C] hover:underline whitespace-nowrap">
+                      className="text-[11px] text-[var(--accent-primary)] hover:underline whitespace-nowrap">
                       Voir →
                     </Link>
                   )}
                   {!notif.isRead && (
                     <button onClick={() => handleMarkRead(notif.id)} disabled={isPending}
-                      className="text-[11px] text-[#6B6A67] hover:text-[#1A1A19] hover:underline disabled:opacity-50 whitespace-nowrap">
+                      className="text-[11px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:underline disabled:opacity-50 whitespace-nowrap">
                       Marquer lu
                     </button>
                   )}
                   <button onClick={() => handleDelete(notif.id)} disabled={isPending}
-                    className="text-[11px] text-[#9B2335] hover:underline disabled:opacity-50">
+                    className="text-[11px] text-[var(--msp-red)] hover:underline disabled:opacity-50">
                     Supprimer
                   </button>
                 </div>

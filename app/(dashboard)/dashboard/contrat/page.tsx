@@ -85,12 +85,12 @@ export default function ContratPage() {
 
       {/* FEEDBACK */}
       {success && (
-        <div className="mb-[20px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[12px_16px] text-[13px] text-[#2D6A4F]">
+        <div className="mb-[20px] bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[8px] p-[12px_16px] text-[13px] text-[var(--msp-green)]">
           {success}
         </div>
       )}
       {error && (
-        <div className="mb-[20px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[12px_16px] text-[13px] text-[#9B2335]">
+        <div className="mb-[20px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[12px_16px] text-[13px] text-[var(--msp-red)]">
           {error}
         </div>
       )}
@@ -99,14 +99,14 @@ export default function ContratPage() {
 
         {/* COLONNE GAUCHE — Upload nouvelle version */}
         <div className="lg:col-span-1">
-          <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px]">
-            <h2 className="text-[14px] font-medium text-[#1A1A19] mb-[6px]">Ajouter une version</h2>
-            <p className="text-[12px] text-[#6B6A67] mb-[20px]">
+          <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[12px] p-[24px]">
+            <h2 className="text-[14px] font-medium text-[var(--text-primary)] mb-[6px]">Ajouter une version</h2>
+            <p className="text-[12px] text-[var(--text-secondary)] mb-[20px]">
               Uploadez la dernière version du contrat au format PDF. L&apos;historique des versions précédentes est conservé.
             </p>
 
             <div className="mb-[14px]">
-              <label className="block text-[12px] font-medium text-[#1A1A19] mb-[6px]">
+              <label className="block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]">
                 Nom de la version *
               </label>
               <input
@@ -114,14 +114,14 @@ export default function ContratPage() {
                 value={versionName}
                 onChange={e => setVersionName(e.target.value)}
                 placeholder="Ex: V3.0 — Janvier 2026"
-                className="w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[13px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors"
+                className="w-full p-[10px_14px] border border-[var(--border)] rounded-[8px] text-[13px] bg-[var(--bg-card)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors"
               />
             </div>
 
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={!versionName.trim() || uploading}
-              className="w-full bg-[#1A3A5C] text-[#FFFFFF] py-[10px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              className="w-full bg-[var(--accent-primary)] text-[var(--bg-card)] py-[10px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--msp-blue-mid)] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             >
               {uploading ? 'Upload en cours…' : 'Choisir un fichier PDF'}
             </button>
@@ -135,29 +135,29 @@ export default function ContratPage() {
 
             {uploading && (
               <div className="mt-[12px]">
-                <div className="w-full h-[4px] bg-[#E8E7E4] rounded-full overflow-hidden">
+                <div className="w-full h-[4px] bg-[var(--border)] rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-[#1A3A5C] transition-all duration-300"
+                    className="h-full bg-[var(--accent-primary)] transition-all duration-300"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                <p className="text-[11px] text-[#6B6A67] mt-[4px]">Upload en cours… {progress}%</p>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-[4px]">Upload en cours… {progress}%</p>
               </div>
             )}
           </div>
 
           {/* Version courante */}
           {latestVersion && (
-            <div className="bg-[#EAF3DE] border border-[#2D6A4F] rounded-[10px] p-[20px] mt-[12px]">
+            <div className="bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[10px] p-[20px] mt-[12px]">
               <div className="flex items-center gap-[8px] mb-[10px]">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2D6A4F" strokeWidth="1.5" strokeLinecap="round">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--msp-green)" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
-                <span className="text-[12px] font-medium text-[#2D6A4F]">Version actuelle</span>
+                <span className="text-[12px] font-medium text-[var(--msp-green)]">Version actuelle</span>
               </div>
-              <p className="text-[14px] font-medium text-[#1A1A19]">{latestVersion.versionName}</p>
-              <p className="text-[12px] text-[#6B6A67] mt-[4px]">
+              <p className="text-[14px] font-medium text-[var(--text-primary)]">{latestVersion.versionName}</p>
+              <p className="text-[12px] text-[var(--text-secondary)] mt-[4px]">
                 Ajoutée le {formatDate(latestVersion.createdAt)}<br />
                 Par {latestVersion.author.name}
               </p>
@@ -165,7 +165,7 @@ export default function ContratPage() {
                 href={latestVersion.fileUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-[6px] mt-[12px] text-[13px] font-medium text-[#2D6A4F] hover:underline"
+                className="inline-flex items-center gap-[6px] mt-[12px] text-[13px] font-medium text-[var(--msp-green)] hover:underline"
               >
                 Consulter le PDF
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -179,41 +179,41 @@ export default function ContratPage() {
 
         {/* COLONNE DROITE — Historique versions */}
         <div className="lg:col-span-2">
-          <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] overflow-hidden">
-            <div className="flex items-center justify-between p-[16px_20px] border-b border-[#E8E7E4]">
-              <h2 className="text-[14px] font-medium text-[#1A1A19]">Historique des versions</h2>
-              <span className="text-[12px] text-[#6B6A67]">{versions.length} version{versions.length > 1 ? 's' : ''}</span>
+          <div className="msp-card overflow-hidden">
+            <div className="flex items-center justify-between p-[16px_20px] border-b border-[var(--border)]">
+              <h2 className="text-[14px] font-medium text-[var(--text-primary)]">Historique des versions</h2>
+              <span className="text-[12px] text-[var(--text-secondary)]">{versions.length} version{versions.length > 1 ? 's' : ''}</span>
             </div>
 
             {loading ? (
-              <div className="p-[40px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+              <div className="p-[40px] text-center text-[13px] text-[var(--text-secondary)]">Chargement…</div>
             ) : versions.length === 0 ? (
               <div className="p-[40px] text-center">
-                <svg className="mx-auto mb-[12px]" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#E8E7E4" strokeWidth="1.2" strokeLinecap="round">
+                <svg className="mx-auto mb-[12px]" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--border)" strokeWidth="1.2" strokeLinecap="round">
                   <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
-                <p className="text-[13px] text-[#6B6A67]">Aucune version uploadée.</p>
+                <p className="text-[13px] text-[var(--text-secondary)]">Aucune version uploadée.</p>
               </div>
             ) : (
-              <div className="divide-y divide-[#E8E7E4]">
+              <div className="divide-y divide-[var(--border)]">
                 {versions.map((v, idx) => (
-                  <div key={v.id} className="flex items-center justify-between p-[16px_20px] hover:bg-[#F7F7F6] transition-colors">
+                  <div key={v.id} className="flex items-center justify-between p-[16px_20px] hover:bg-[var(--bg-surface)] transition-colors">
                     <div className="flex items-center gap-[14px]">
                       {/* Indicateur version courante */}
                       <div className={`w-[8px] h-[8px] rounded-full flex-shrink-0 ${
-                        idx === 0 ? 'bg-[#2D6A4F]' : 'bg-[#E8E7E4]'
+                        idx === 0 ? 'bg-[var(--msp-green)]' : 'bg-[var(--border)]'
                       }`} />
                       <div>
                         <div className="flex items-center gap-[8px]">
-                          <span className="text-[13px] font-medium text-[#1A1A19]">{v.versionName}</span>
+                          <span className="text-[13px] font-medium text-[var(--text-primary)]">{v.versionName}</span>
                           {idx === 0 && (
-                            <span className="inline-block border border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE] rounded-[4px] py-[1px] px-[6px] text-[10px]">
+                            <span className="inline-block border border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)] rounded-[6px] py-[1px] px-[6px] text-[10px]">
                               Actuelle
                             </span>
                           )}
                         </div>
-                        <div className="text-[12px] text-[#6B6A67] mt-[2px]">
+                        <div className="text-[12px] text-[var(--text-secondary)] mt-[2px]">
                           {formatDate(v.createdAt)} · Par {v.author.name}
                         </div>
                       </div>
@@ -224,7 +224,7 @@ export default function ContratPage() {
                         href={v.fileUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[12px] text-[#1A3A5C] hover:underline flex items-center gap-[4px]"
+                        className="text-[12px] text-[var(--accent-primary)] hover:underline flex items-center gap-[4px]"
                       >
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
@@ -235,7 +235,7 @@ export default function ContratPage() {
                       <button
                         onClick={() => handleDelete(v.id, v.versionName)}
                         disabled={isPending}
-                        className="text-[12px] text-[#9B2335] hover:underline disabled:opacity-50"
+                        className="text-[12px] text-[var(--msp-red)] hover:underline disabled:opacity-50"
                       >
                         Supprimer
                       </button>
@@ -247,13 +247,13 @@ export default function ContratPage() {
           </div>
 
           {/* Note confidentialité */}
-          <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[14px_16px] mt-[12px]">
+          <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-[8px] p-[14px_16px] mt-[12px]">
             <div className="flex items-start gap-[8px]">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B6A67" strokeWidth="1.5" strokeLinecap="round" className="flex-shrink-0 mt-[1px]">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round" className="flex-shrink-0 mt-[1px]">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
                 <path d="M7 11V7a5 5 0 0110 0v4"/>
               </svg>
-              <p className="text-[12px] text-[#6B6A67] leading-[1.6]">
+              <p className="text-[12px] text-[var(--text-secondary)] leading-[1.6]">
                 Les versions du contrat sont accessibles uniquement aux administrateurs de MSP.
                 Elles ne sont pas visibles dans les espaces partenaires.
               </p>

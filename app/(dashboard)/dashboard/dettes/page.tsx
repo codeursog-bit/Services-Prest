@@ -26,17 +26,17 @@ interface Totals {
 }
 
 const TYPE_CFG: Record<string, { label: string; cls: string }> = {
-  AVANCE_SALAIRE:  { label: 'Avance sur salaire', cls: 'border-[#1A3A5C] text-[#1A3A5C] bg-[#E8EEF5]' },
-  CAS_SOCIAL:      { label: 'Cas social',          cls: 'border-[#534AB7] text-[#534AB7] bg-[#EEEDFE]' },
-  DETTE_ENTREPRISE:{ label: 'Dette entreprise',    cls: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]' },
-  AUTRE:           { label: 'Autre',               cls: 'border-[#E8E7E4] text-[#6B6A67] bg-[#F7F7F6]' },
+  AVANCE_SALAIRE:  { label: 'Avance sur salaire', cls: 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--msp-blue-light)]' },
+  CAS_SOCIAL:      { label: 'Cas social',          cls: 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--msp-blue-light)]' },
+  DETTE_ENTREPRISE:{ label: 'Dette entreprise',    cls: 'border-[var(--msp-amber)] text-[var(--msp-amber)] bg-[var(--msp-amber-light)]' },
+  AUTRE:           { label: 'Autre',               cls: 'border-[var(--border)] text-[var(--text-secondary)] bg-[var(--bg-surface)]' },
 };
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
-  ACCORDE:       { label: 'Accordé',        cls: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]' },
-  REMBOURSE:     { label: 'Remboursé',      cls: 'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]' },
-  NON_REMBOURSE: { label: 'Non remboursé',  cls: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]' },
-  REFUSE:        { label: 'Refusé',         cls: 'border-[#E8E7E4] text-[#6B6A67] bg-[#F7F7F6]' },
+  ACCORDE:       { label: 'Accordé',        cls: 'border-[var(--msp-amber)] text-[var(--msp-amber)] bg-[var(--msp-amber-light)]' },
+  REMBOURSE:     { label: 'Remboursé',      cls: 'border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)]' },
+  NON_REMBOURSE: { label: 'Non remboursé',  cls: 'border-[var(--msp-red)] text-[var(--msp-red)] bg-[var(--msp-red-light)]' },
+  REFUSE:        { label: 'Refusé',         cls: 'border-[var(--border)] text-[var(--text-secondary)] bg-[var(--bg-surface)]' },
 };
 
 const TYPE_FILTERS = ['Tous', 'AVANCE_SALAIRE', 'CAS_SOCIAL', 'DETTE_ENTREPRISE', 'AUTRE'];
@@ -54,8 +54,8 @@ export default function DettesPage() {
   const [success, setSuccess] = useState('');
   const [isPending, startT] = useTransition();
 
-  const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
-  const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+  const ic = "w-full px-[13px] py-[9px] border border-[var(--border)] rounded-[8px] text-[13px] bg-[var(--bg-input)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all focus:border-[var(--accent-primary)] focus:ring-[3px] focus:ring-[var(--accent-ring)]";
+  const lc = "block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]";
 
   const load = () => {
     const params = new URLSearchParams();
@@ -133,38 +133,38 @@ export default function DettesPage() {
       {/* NAVIGATION */}
       <div className="flex items-center gap-[8px] mb-[24px]">
         <Link href="/dashboard/banques"
-          className="text-[12px] text-[#6B6A67] hover:text-[#1A1A19] transition-colors">
+          className="text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
           ← Banques & Créances
         </Link>
-        <span className="text-[#E8E7E4]">/</span>
-        <span className="text-[12px] text-[#1A1A19] font-medium">Dettes internes</span>
+        <span className="text-[var(--border)]">/</span>
+        <span className="text-[12px] text-[var(--text-primary)] font-medium">Dettes internes</span>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-[12px] mb-[24px]">
         {[
-          { label: 'Total accordé',       value: formatAmount(totals.totalAccorde),      color: 'text-[#1A1A19]',  sub: 'FCFA' },
-          { label: 'Total remboursé',     value: formatAmount(totals.totalRembourse),    color: 'text-[#2D6A4F]',  sub: 'FCFA' },
-          { label: 'Reste à recouvrer',   value: formatAmount(totals.totalNonRembourse), color: totals.totalNonRembourse > 0 ? 'text-[#9B2335]' : 'text-[#1A1A19]', sub: 'FCFA' },
+          { label: 'Total accordé',       value: formatAmount(totals.totalAccorde),      color: 'text-[var(--text-primary)]',  sub: 'FCFA' },
+          { label: 'Total remboursé',     value: formatAmount(totals.totalRembourse),    color: 'text-[var(--msp-green)]',  sub: 'FCFA' },
+          { label: 'Reste à recouvrer',   value: formatAmount(totals.totalNonRembourse), color: totals.totalNonRembourse > 0 ? 'text-[var(--msp-red)]' : 'text-[var(--text-primary)]', sub: 'FCFA' },
         ].map(k => (
-          <div key={k.label} className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[16px_20px]">
-            <div className={`text-[22px] font-medium ${k.color}`}>{k.value} <span className="text-[12px] font-normal text-[#6B6A67]">{k.sub}</span></div>
-            <div className="text-[12px] text-[#6B6A67] mt-[4px]">{k.label}</div>
+          <div key={k.label} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[16px_20px]">
+            <div className={`text-[22px] font-medium ${k.color}`}>{k.value} <span className="text-[12px] font-normal text-[var(--text-secondary)]">{k.sub}</span></div>
+            <div className="text-[12px] text-[var(--text-secondary)] mt-[4px]">{k.label}</div>
           </div>
         ))}
       </div>
 
       {/* ENCADRÉ INFO */}
-      <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[12px_16px] mb-[20px]">
-        <p className="text-[12px] text-[#6B6A67]">
+      <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-[8px] p-[12px_16px] mb-[20px]">
+        <p className="text-[12px] text-[var(--text-secondary)]">
           Ce registre permet d&apos;évaluer la situation financière interne de l&apos;entreprise.
           Les dettes du personnel (avances, cas sociaux) sont notées manuellement — le suivi de déduction sur salaire est géré par Konza RH.
         </p>
       </div>
 
       {/* FEEDBACK */}
-      {success && <div className="mb-[16px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[10px_14px] text-[13px] text-[#2D6A4F]">{success}</div>}
-      {error   && <div className="mb-[16px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[10px_14px] text-[13px] text-[#9B2335]">{error}</div>}
+      {success && <div className="mb-[16px] bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[8px] p-[10px_14px] text-[13px] text-[var(--msp-green)]">{success}</div>}
+      {error   && <div className="mb-[16px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[10px_14px] text-[13px] text-[var(--msp-red)]">{error}</div>}
 
       {/* FILTRES + ACTION */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-[12px] mb-[20px]">
@@ -173,8 +173,8 @@ export default function DettesPage() {
           <div className="flex flex-wrap gap-[4px]">
             {TYPE_FILTERS.map(f => (
               <button key={f} onClick={() => setTypeFilter(f)}
-                className={`py-[5px] px-[10px] rounded-[6px] text-[11px] border transition-colors ${
-                  typeFilter === f ? 'bg-[#1A3A5C] border-[#1A3A5C] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#E8E7E4] text-[#6B6A67] hover:border-[#1A3A5C]'
+                className={`py-[5px] px-[10px] rounded-[8px] text-[11px] border transition-colors ${
+                  typeFilter === f ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--bg-card)]' : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]'
                 }`}>
                 {f === 'Tous' ? 'Tous types' : TYPE_CFG[f]?.label}
               </button>
@@ -184,8 +184,8 @@ export default function DettesPage() {
           <div className="flex flex-wrap gap-[4px]">
             {STATUS_FILTERS.map(f => (
               <button key={f} onClick={() => setStatusFilter(f)}
-                className={`py-[5px] px-[10px] rounded-[6px] text-[11px] border transition-colors ${
-                  statusFilter === f ? 'bg-[#1A3A5C] border-[#1A3A5C] text-[#FFFFFF]' : 'bg-[#FFFFFF] border-[#E8E7E4] text-[#6B6A67] hover:border-[#1A3A5C]'
+                className={`py-[5px] px-[10px] rounded-[8px] text-[11px] border transition-colors ${
+                  statusFilter === f ? 'bg-[var(--accent-primary)] border-[var(--accent-primary)] text-[var(--bg-card)]' : 'bg-[var(--bg-card)] border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--accent-primary)]'
                 }`}>
                 {f === 'Tous' ? 'Tous statuts' : STATUS_CFG[f]?.label}
               </button>
@@ -193,15 +193,15 @@ export default function DettesPage() {
           </div>
         </div>
         <button onClick={() => { setShowForm(true); setEditDebt(null); }}
-          className="flex-shrink-0 bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] transition-colors">
+          className="flex-shrink-0 bg-[var(--accent-primary)] text-[var(--bg-card)] py-[8px] px-[16px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--msp-blue-mid)] transition-colors">
           + Enregistrer une dette
         </button>
       </div>
 
       {/* FORMULAIRE DETTE */}
       {(showForm || editDebt) && (
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px] mb-[20px]">
-          <h3 className="text-[14px] font-medium text-[#1A1A19] mb-[20px]">
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[24px] mb-[20px]">
+          <h3 className="text-[14px] font-medium text-[var(--text-primary)] mb-[20px]">
             {editDebt ? 'Modifier la dette' : 'Enregistrer une dette'}
           </h3>
           <form onSubmit={handleSubmit}>
@@ -224,7 +224,7 @@ export default function DettesPage() {
                   defaultValue={editDebt?.debtorName || ''}
                   placeholder="Ex: Jean Mbemba — Chauffeur"
                   className={ic} />
-                <p className="text-[11px] text-[#6B6A67] mt-[3px]">Pour le personnel : nom + fonction</p>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-[3px]">Pour le personnel : nom + fonction</p>
               </div>
               {/* Motif */}
               <div className="md:col-span-2">
@@ -262,7 +262,7 @@ export default function DettesPage() {
                 <label className={lc}>Remboursé le</label>
                 <input type="date" name="repaidAt"
                   defaultValue={toDateInput(editDebt?.repaidAt || null)} className={ic} />
-                <p className="text-[11px] text-[#6B6A67] mt-[3px]">Laisser vide si non encore remboursé</p>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-[3px]">Laisser vide si non encore remboursé</p>
               </div>
               {/* Motif statut (refus, non remboursé) */}
               <div className="md:col-span-2">
@@ -283,11 +283,11 @@ export default function DettesPage() {
             </div>
             <div className="flex gap-[10px] justify-end">
               <button type="button" onClick={() => { setShowForm(false); setEditDebt(null); }}
-                className="border border-[#E8E7E4] text-[#1A1A19] py-[8px] px-[14px] rounded-[6px] text-[13px] font-medium hover:bg-[#F7F7F6]">
+                className="border border-[var(--border)] text-[var(--text-primary)] py-[8px] px-[14px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--bg-surface)]">
                 Annuler
               </button>
               <button type="submit" disabled={isPending}
-                className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] disabled:opacity-60">
+                className="bg-[var(--accent-primary)] text-[var(--bg-card)] py-[8px] px-[16px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--msp-blue-mid)] disabled:opacity-60">
                 {isPending ? 'Enregistrement…' : editDebt ? 'Modifier' : 'Enregistrer'}
               </button>
             </div>
@@ -296,23 +296,23 @@ export default function DettesPage() {
       )}
 
       {/* LISTE DES DETTES */}
-      <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] overflow-hidden">
+      <div className="msp-card overflow-hidden">
         {loading ? (
-          <div className="p-[48px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+          <div className="p-[48px] text-center text-[13px] text-[var(--text-secondary)]">Chargement…</div>
         ) : debts.length === 0 ? (
-          <div className="p-[48px] text-center text-[13px] text-[#6B6A67]">Aucune dette enregistrée.</div>
+          <div className="p-[48px] text-center text-[13px] text-[var(--text-secondary)]">Aucune dette enregistrée.</div>
         ) : (
           <div className="w-full overflow-x-auto">
             <table className="w-full text-left">
-              <thead className="bg-[#F7F7F6] border-b border-[#E8E7E4]">
+              <thead style={{ background: "var(--bg-surface)", borderBottom: "1px solid var(--border)" }}>
                 <tr>
-                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Débiteur / Créancier</th>
-                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Type</th>
-                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Motif</th>
-                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[#6B6A67] text-right">Montant</th>
-                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Évaluation</th>
-                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[#6B6A67]">Statut</th>
-                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[#6B6A67] text-right">Actions</th>
+                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Débiteur / Créancier</th>
+                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Type</th>
+                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Motif</th>
+                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)] text-right">Montant</th>
+                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Évaluation</th>
+                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)]">Statut</th>
+                  <th className="py-[12px] px-[16px] text-[12px] font-medium text-[var(--text-secondary)] text-right">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -320,44 +320,44 @@ export default function DettesPage() {
                   const typeCfg   = TYPE_CFG[debt.type]   || TYPE_CFG.AUTRE;
                   const statusCfg = STATUS_CFG[debt.status] || STATUS_CFG.ACCORDE;
                   return (
-                    <tr key={debt.id} className="border-b border-[#E8E7E4] hover:bg-[#F7F7F6]">
+                    <tr key={debt.id} className="border-b border-[var(--border)] hover:bg-[var(--bg-surface)]">
                       <td className="py-[13px] px-[16px]">
-                        <div className="text-[13px] font-medium text-[#1A1A19]">{debt.debtorName}</div>
+                        <div className="text-[13px] font-medium text-[var(--text-primary)]">{debt.debtorName}</div>
                         {debt.partner && (
                           <Link href={`/dashboard/partners/${debt.partner.id}`}
-                            className="text-[11px] text-[#1A3A5C] hover:underline">
+                            className="text-[11px] text-[var(--accent-primary)] hover:underline">
                             {debt.partner.orgName}
                           </Link>
                         )}
                       </td>
                       <td className="py-[13px] px-[16px]">
-                        <span className={`inline-block border rounded-[4px] py-[2px] px-[7px] text-[11px] ${typeCfg.cls}`}>
+                        <span className={`inline-block border rounded-[6px] py-[2px] px-[7px] text-[11px] ${typeCfg.cls}`}>
                           {typeCfg.label}
                         </span>
                       </td>
                       <td className="py-[13px] px-[16px] max-w-[200px]">
-                        <span className="text-[13px] text-[#1A1A19] block truncate">{debt.motif}</span>
+                        <span className="text-[13px] text-[var(--text-primary)] block truncate">{debt.motif}</span>
                         {debt.statusNote && (
-                          <span className="text-[11px] text-[#8B4513] italic block mt-[1px] truncate">{debt.statusNote}</span>
+                          <span className="text-[11px] text-[var(--msp-amber)] italic block mt-[1px] truncate">{debt.statusNote}</span>
                         )}
                       </td>
                       <td className="py-[13px] px-[16px] text-right">
-                        <span className="text-[13px] font-medium text-[#1A1A19]">{formatAmount(debt.amount)}</span>
-                        <span className="text-[11px] text-[#6B6A67] ml-[2px]">FCFA</span>
+                        <span className="text-[13px] font-medium text-[var(--text-primary)]">{formatAmount(debt.amount)}</span>
+                        <span className="text-[11px] text-[var(--text-secondary)] ml-[2px]">FCFA</span>
                       </td>
                       <td className="py-[13px] px-[16px]">
-                        <div className="text-[12px] text-[#6B6A67]">Accordé : {formatDateShort(debt.grantedAt)}</div>
+                        <div className="text-[12px] text-[var(--text-secondary)]">Accordé : {formatDateShort(debt.grantedAt)}</div>
                         {debt.repaidAt ? (
-                          <div className="text-[12px] text-[#2D6A4F] mt-[1px]">Remboursé : {formatDateShort(debt.repaidAt)}</div>
+                          <div className="text-[12px] text-[var(--msp-green)] mt-[1px]">Remboursé : {formatDateShort(debt.repaidAt)}</div>
                         ) : (
-                          <div className="text-[12px] text-[#9B2335] mt-[1px]">Non remboursé</div>
+                          <div className="text-[12px] text-[var(--msp-red)] mt-[1px]">Non remboursé</div>
                         )}
                       </td>
                       <td className="py-[13px] px-[16px]">
                         <select value={debt.status}
                           onChange={e => handleStatusChange(debt.id, e.target.value)}
                           disabled={isPending}
-                          className={`border rounded-[4px] py-[2px] px-[6px] text-[11px] cursor-pointer focus:outline-none disabled:opacity-50 ${statusCfg.cls}`}>
+                          className={`border rounded-[6px] py-[2px] px-[6px] text-[11px] cursor-pointer focus:outline-none disabled:opacity-50 ${statusCfg.cls}`}>
                           <option value="ACCORDE">Accordé</option>
                           <option value="REMBOURSE">Remboursé</option>
                           <option value="NON_REMBOURSE">Non remboursé</option>
@@ -367,11 +367,11 @@ export default function DettesPage() {
                       <td className="py-[13px] px-[16px] text-right">
                         <div className="flex gap-[10px] justify-end">
                           <button onClick={() => { setEditDebt(debt); setShowForm(false); }} disabled={isPending}
-                            className="text-[12px] text-[#6B6A67] hover:underline disabled:opacity-50">
+                            className="text-[12px] text-[var(--text-secondary)] hover:underline disabled:opacity-50">
                             Modifier
                           </button>
                           <button onClick={() => handleDelete(debt.id, debt.debtorName)} disabled={isPending}
-                            className="text-[12px] text-[#9B2335] hover:underline disabled:opacity-50">
+                            className="text-[12px] text-[var(--msp-red)] hover:underline disabled:opacity-50">
                             Supprimer
                           </button>
                         </div>
@@ -385,7 +385,7 @@ export default function DettesPage() {
         )}
       </div>
 
-      <p className="text-[12px] text-[#6B6A67] mt-[12px]">
+      <p className="text-[12px] text-[var(--text-secondary)] mt-[12px]">
         {debts.length} enregistrement{debts.length > 1 ? 's' : ''} · Total accordé : {formatAmount(totals.totalAccorde)} FCFA
       </p>
     </DashboardLayout>

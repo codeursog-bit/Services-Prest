@@ -56,28 +56,28 @@ export default function InfosTab({ partnerId, partnerEmail, partnerName, initial
   const formatDate = (d: string | Date) =>
     new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
 
-  const inputClass = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C]";
-  const labelClass = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+  const inputClass = "w-full p-[10px_14px] border border-[var(--border)] rounded-[8px] text-[14px] bg-[var(--bg-card)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]";
+  const labelClass = "block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]";
 
   return (
     <div>
-      <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px] mb-[20px]">
-        <h2 className="text-[14px] font-medium text-[#1A1A19]">Transmettre une information</h2>
-        <p className="text-[12px] text-[#6B6A67] mt-[4px] mb-[20px]">Cette information sera envoyée par email au partenaire et conservée dans l&apos;historique.</p>
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[24px] mb-[20px]">
+        <h2 className="text-[14px] font-medium text-[var(--text-primary)]">Transmettre une information</h2>
+        <p className="text-[12px] text-[var(--text-secondary)] mt-[4px] mb-[20px]">Cette information sera envoyée par email au partenaire et conservée dans l&apos;historique.</p>
 
         {success && (
-          <div className="mb-[16px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[12px] text-[13px] text-[#2D6A4F]">
+          <div className="mb-[16px] bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-green)]">
             L&apos;information a bien été transmise au partenaire.
           </div>
         )}
         {error && (
-          <div className="mb-[16px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[12px] text-[13px] text-[#9B2335]">{error}</div>
+          <div className="mb-[16px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-red)]">{error}</div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-[16px]">
           <div>
             <label className={labelClass}>Destinataire</label>
-            <div className="bg-[#F7F7F6] border border-[#E8E7E4] p-[8px_12px] rounded-[6px] text-[13px] text-[#6B6A67]">
+            <div className="bg-[var(--bg-surface)] border border-[var(--border)] p-[8px_12px] rounded-[8px] text-[13px] text-[var(--text-secondary)]">
               {partnerName} — {partnerEmail}
             </div>
           </div>
@@ -91,7 +91,7 @@ export default function InfosTab({ partnerId, partnerEmail, partnerName, initial
           </div>
           <div>
             <button type="submit" disabled={isPending}
-              className={`bg-[#1A3A5C] text-[#FFFFFF] py-[10px] px-[20px] rounded-[6px] text-[13px] font-medium transition-colors ${isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[#142d4a]'}`}>
+              className={`bg-[var(--accent-primary)] text-[#FFFFFF] py-[10px] px-[20px] rounded-[8px] text-[13px] font-medium transition-colors ${isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[var(--msp-blue-mid)]'}`}>
               {isPending ? 'Envoi en cours…' : "Envoyer l'information"}
             </button>
           </div>
@@ -100,23 +100,23 @@ export default function InfosTab({ partnerId, partnerEmail, partnerName, initial
 
       {/* HISTORIQUE */}
       <div>
-        <h2 className="text-[14px] font-medium text-[#1A1A19] mb-[16px]">Historique ({messages.length})</h2>
+        <h2 className="text-[14px] font-medium text-[var(--text-primary)] mb-[16px]">Historique ({messages.length})</h2>
         {messages.length === 0 ? (
-          <p className="text-[13px] text-[#6B6A67]">Aucune information transmise à ce partenaire.</p>
+          <p className="text-[13px] text-[var(--text-secondary)]">Aucune information transmise à ce partenaire.</p>
         ) : (
           <div className="flex flex-col gap-[8px]">
             {messages.map(msg => (
-              <div key={msg.id} className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[16px]">
+              <div key={msg.id} className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-[8px] p-[16px]">
                 <div className="flex justify-between items-start">
-                  <div className="text-[13px] font-medium text-[#1A1A19]">Objet : {msg.subject}</div>
-                  <div className="text-[12px] text-[#6B6A67]">{formatDate(msg.createdAt)}</div>
+                  <div className="text-[13px] font-medium text-[var(--text-primary)]">Objet : {msg.subject}</div>
+                  <div className="text-[12px] text-[var(--text-secondary)]">{formatDate(msg.createdAt)}</div>
                 </div>
-                <p className="text-[13px] text-[#6B6A67] leading-[1.7] mt-[10px] line-clamp-3">{msg.content}</p>
+                <p className="text-[13px] text-[var(--text-secondary)] leading-[1.7] mt-[10px] line-clamp-3">{msg.content}</p>
                 <div className="flex items-center gap-[16px] mt-[10px]">
-                  <span className="text-[12px] text-[#6B6A67]">Envoyé par : {msg.author?.name || '—'}</span>
-                  <span className="bg-[#EAF3DE] text-[#2D6A4F] text-[12px] border border-[#2D6A4F] rounded-[4px] p-[2px_8px]">Email envoyé ✓</span>
+                  <span className="text-[12px] text-[var(--text-secondary)]">Envoyé par : {msg.author?.name || '—'}</span>
+                  <span className="bg-[var(--msp-green-light)] text-[var(--msp-green)] text-[12px] border border-[var(--msp-green)] rounded-[6px] p-[2px_8px]">Email envoyé ✓</span>
                   {msg.attachedDoc && (
-                    <span className="flex items-center gap-[4px] text-[12px] text-[#1A3A5C]">
+                    <span className="flex items-center gap-[4px] text-[12px] text-[var(--accent-primary)]">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
                       {msg.attachedDoc.name}
                     </span>

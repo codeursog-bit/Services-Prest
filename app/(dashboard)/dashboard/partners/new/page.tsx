@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
-const inputClass = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
-const labelClass = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+const inputClass = "w-full p-[10px_14px] border border-[var(--border)] rounded-[8px] text-[14px] bg-[var(--bg-card)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors";
+const labelClass = "block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]";
 
 export default function NewPartnerPage() {
   const router = useRouter();
@@ -50,20 +50,20 @@ export default function NewPartnerPage() {
   return (
     <DashboardLayout pageTitle="Nouveau partenaire">
       <div className="max-w-[640px] mx-auto">
-        <Link href="/dashboard/partners" className="inline-block text-[12px] text-[#6B6A67] hover:text-[#1A1A19] transition-colors mb-[32px]">
+        <Link href="/dashboard/partners" className="inline-block text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors mb-[32px]">
           ← Retour à la liste
         </Link>
 
         {error && (
-          <div className="mb-[24px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[12px]">
-            <span className="text-[13px] text-[#9B2335]">{error}</span>
+          <div className="mb-[24px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[12px]">
+            <span className="text-[13px] text-[var(--msp-red)]">{error}</span>
           </div>
         )}
 
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[32px_36px]">
-          <h2 className="text-[18px] font-medium text-[#1A1A19] mb-[8px]">Informations du partenaire</h2>
-          <p className="text-[13px] text-[#6B6A67] mb-[28px]">Un email d&apos;invitation sera envoyé automatiquement avec le lien d&apos;accès à son espace.</p>
-          <div className="h-[1px] w-full bg-[#E8E7E4] mb-[28px]"></div>
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[32px_36px]">
+          <h2 className="text-[18px] font-medium text-[var(--text-primary)] mb-[8px]">Informations du partenaire</h2>
+          <p className="text-[13px] text-[var(--text-secondary)] mb-[28px]">Un email d&apos;invitation sera envoyé automatiquement avec le lien d&apos;accès à son espace.</p>
+          <div className="h-[1px] w-full bg-[var(--border)] mb-[28px]"></div>
 
           <form onSubmit={handleSubmit}>
             {/* Identité */}
@@ -127,15 +127,15 @@ export default function NewPartnerPage() {
             {/* Notes internes */}
             <div className="mb-[32px]">
               <label className={labelClass}>Notes internes</label>
-              <p className="text-[11px] text-[#6B6A67] mb-[6px]">Ces notes ne sont jamais visibles par le partenaire.</p>
+              <p className="text-[11px] text-[var(--text-secondary)] mb-[6px]">Ces notes ne sont jamais visibles par le partenaire.</p>
               <textarea name="notes" rows={3} className={`${inputClass} resize-y`} placeholder="Contexte, conditions particulières…"></textarea>
             </div>
 
-            <div className="h-[1px] w-full bg-[#E8E7E4] mb-[28px]"></div>
+            <div className="h-[1px] w-full bg-[var(--border)] mb-[28px]"></div>
 
             {/* Notifications */}
             <div className="mb-[32px]">
-              <h3 className="text-[14px] font-medium text-[#1A1A19] mb-[16px]">Paramètres de notification</h3>
+              <h3 className="text-[14px] font-medium text-[var(--text-primary)] mb-[16px]">Paramètres de notification</h3>
               <div className="flex flex-col gap-[14px]">
                 <Toggle name="notifyOnDoc" defaultChecked label="Notifier le partenaire par email lors de chaque nouveau document partagé" />
                 <Toggle name="notifyAdmin" defaultChecked label="Recevoir une copie des notifications par email" />
@@ -145,11 +145,11 @@ export default function NewPartnerPage() {
             {/* Boutons */}
             <div className="flex justify-end gap-[12px]">
               <Link href="/dashboard/partners"
-                className="border border-[#E8E7E4] text-[#1A1A19] bg-[#FFFFFF] py-[10px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#F7F7F6] transition-colors">
+                className="border border-[var(--border)] text-[var(--text-primary)] bg-[var(--bg-card)] py-[10px] px-[16px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--bg-surface)] transition-colors">
                 Annuler
               </Link>
               <button type="submit" disabled={isPending}
-                className={`bg-[#1A3A5C] text-[#FFFFFF] py-[10px] px-[16px] rounded-[6px] text-[13px] font-medium transition-colors ${isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[#142d4a]'}`}>
+                className={`bg-[var(--accent-primary)] text-[var(--bg-card)] py-[10px] px-[16px] rounded-[8px] text-[13px] font-medium transition-colors ${isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[var(--msp-blue-mid)]'}`}>
                 {isPending ? 'Création…' : "Créer l'espace partenaire"}
               </button>
             </div>
@@ -166,10 +166,10 @@ function Toggle({ name, defaultChecked, label }: { name: string; defaultChecked?
     <label className="flex items-center gap-[12px] cursor-pointer">
       <div className="relative flex-shrink-0">
         <input type="checkbox" name={name} defaultChecked={defaultChecked} className="peer sr-only" />
-        <div className="w-[36px] h-[20px] bg-[#E8E7E4] rounded-full peer-checked:bg-[#1A3A5C] transition-colors duration-200"></div>
-        <div className="absolute left-[2px] top-[2px] w-[16px] h-[16px] bg-[#FFFFFF] rounded-full transition-transform duration-200 peer-checked:translate-x-[16px]"></div>
+        <div className="w-[36px] h-[20px] bg-[var(--border)] rounded-full peer-checked:bg-[var(--accent-primary)] transition-colors duration-200"></div>
+        <div className="absolute left-[2px] top-[2px] w-[16px] h-[16px] bg-[var(--bg-card)] rounded-full transition-transform duration-200 peer-checked:translate-x-[16px]"></div>
       </div>
-      <span className="text-[13px] text-[#1A1A19]">{label}</span>
+      <span className="text-[13px] text-[var(--text-primary)]">{label}</span>
     </label>
   );
 }

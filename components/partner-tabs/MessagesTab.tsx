@@ -26,8 +26,8 @@ export function InfosTab({
   const [success, setSuccess]   = useState(false);
   const [error, setError]       = useState('');
 
-  const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
-  const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+  const ic = "w-full p-[10px_14px] border border-[var(--border)] rounded-[8px] text-[14px] bg-[var(--bg-card)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors";
+  const lc = "block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]";
 
   const loadSent = () => {
     fetch(`/api/messages?partnerId=${partnerId}&direction=MSP_TO_PARTNER`)
@@ -69,20 +69,20 @@ export function InfosTab({
   return (
     <div>
       {/* FORMULAIRE */}
-      <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px] mb-[24px]">
-        <h3 className="text-[14px] font-medium text-[#1A1A19] mb-[4px]">Transmettre une information</h3>
-        <p className="text-[12px] text-[#6B6A67] mb-[20px]">
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[24px] mb-[24px]">
+        <h3 className="text-[14px] font-medium text-[var(--text-primary)] mb-[4px]">Transmettre une information</h3>
+        <p className="text-[12px] text-[var(--text-secondary)] mb-[20px]">
           Un email sera envoyé immédiatement à <strong>{partnerName}</strong> ({partnerEmail}).
           Le message sera visible dans son espace.
         </p>
 
         {success && (
-          <div className="mb-[16px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[12px] text-[13px] text-[#2D6A4F]">
+          <div className="mb-[16px] bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-green)]">
             ✓ Information transmise avec succès à {partnerName}.
           </div>
         )}
         {error && (
-          <div className="mb-[16px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[12px] text-[13px] text-[#9B2335]">
+          <div className="mb-[16px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-red)]">
             {error}
           </div>
         )}
@@ -90,7 +90,7 @@ export function InfosTab({
         <form onSubmit={handleSubmit} className="flex flex-col gap-[14px]">
           <div>
             <label className={lc}>Destinataire</label>
-            <div className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[6px] p-[10px_14px] text-[13px] text-[#6B6A67]">
+            <div className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-[8px] p-[10px_14px] text-[13px] text-[var(--text-secondary)]">
               {partnerName} · {partnerEmail}
             </div>
           </div>
@@ -112,12 +112,12 @@ export function InfosTab({
               <option value="">Aucun document joint</option>
               {docs.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
-            <p className="text-[11px] text-[#6B6A67] mt-[4px]">Documents du coffre-fort entreprise</p>
+            <p className="text-[11px] text-[var(--text-secondary)] mt-[4px]">Documents du coffre-fort entreprise</p>
           </div>
           <div className="flex justify-end">
             <button type="submit" disabled={isPending}
-              className={`bg-[#1A3A5C] text-[#FFFFFF] py-[10px] px-[20px] rounded-[6px] text-[13px] font-medium transition-colors ${
-                isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[#142d4a]'
+              className={`bg-[var(--accent-primary)] text-[#FFFFFF] py-[10px] px-[20px] rounded-[8px] text-[13px] font-medium transition-colors ${
+                isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[var(--msp-blue-mid)]'
               }`}>
               {isPending ? 'Envoi en cours…' : "Envoyer l'information"}
             </button>
@@ -127,30 +127,30 @@ export function InfosTab({
 
       {/* HISTORIQUE */}
       <div>
-        <h3 className="text-[13px] font-medium text-[#1A1A19] mb-[12px]">Historique des envois ({sent.length})</h3>
+        <h3 className="text-[13px] font-medium text-[var(--text-primary)] mb-[12px]">Historique des envois ({sent.length})</h3>
         {loading ? (
-          <p className="text-[13px] text-[#6B6A67]">Chargement…</p>
+          <p className="text-[13px] text-[var(--text-secondary)]">Chargement…</p>
         ) : sent.length === 0 ? (
-          <div className="bg-[#F7F7F6] rounded-[8px] p-[24px] text-center text-[13px] text-[#6B6A67]">
+          <div className="bg-[var(--bg-surface)] rounded-[8px] p-[24px] text-center text-[13px] text-[var(--text-secondary)]">
             Aucune information transmise à ce partenaire.
           </div>
         ) : (
           <div className="flex flex-col gap-[8px]">
             {sent.map(msg => (
-              <div key={msg.id} className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[14px_16px]">
+              <div key={msg.id} className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-[8px] p-[14px_16px]">
                 <div className="flex justify-between items-start gap-[8px] mb-[6px]">
-                  <span className="text-[13px] font-medium text-[#1A1A19]">{msg.subject}</span>
-                  <span className="text-[11px] text-[#6B6A67] whitespace-nowrap flex-shrink-0">{formatDate(msg.createdAt)}</span>
+                  <span className="text-[13px] font-medium text-[var(--text-primary)]">{msg.subject}</span>
+                  <span className="text-[11px] text-[var(--text-secondary)] whitespace-nowrap flex-shrink-0">{formatDate(msg.createdAt)}</span>
                 </div>
-                <p className="text-[13px] text-[#6B6A67] leading-[1.6] line-clamp-2">{msg.content}</p>
+                <p className="text-[13px] text-[var(--text-secondary)] leading-[1.6] line-clamp-2">{msg.content}</p>
                 <div className="flex items-center gap-[10px] mt-[8px] flex-wrap">
-                  <span className="text-[12px] text-[#6B6A67]">Par : {msg.author.name}</span>
-                  <span className="inline-block bg-[#EAF3DE] border border-[#2D6A4F] text-[#2D6A4F] rounded-[4px] py-[1px] px-[6px] text-[11px]">
+                  <span className="text-[12px] text-[var(--text-secondary)]">Par : {msg.author.name}</span>
+                  <span className="inline-block bg-[var(--msp-green-light)] border border-[var(--msp-green)] text-[var(--msp-green)] rounded-[6px] py-[1px] px-[6px] text-[11px]">
                     Email envoyé ✓
                   </span>
                   {msg.attachedDoc && (
                     <a href={msg.attachedDoc.url} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-[4px] text-[12px] text-[#1A3A5C] hover:underline">
+                      className="inline-flex items-center gap-[4px] text-[12px] text-[var(--accent-primary)] hover:underline">
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                         <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
                       </svg>
@@ -230,20 +230,20 @@ export function MessagesTab({
       {/* EN-TÊTE */}
       <div className="flex items-center justify-between mb-[16px]">
         <div className="flex items-center gap-[8px]">
-          <span className="text-[13px] text-[#6B6A67]">{sorted.length} message{sorted.length > 1 ? 's' : ''}</span>
+          <span className="text-[13px] text-[var(--text-secondary)]">{sorted.length} message{sorted.length > 1 ? 's' : ''}</span>
           {unreadCount > 0 && (
-            <span className="inline-block bg-[#1A3A5C] text-[#FFFFFF] text-[11px] px-[7px] py-[1px] rounded-full">
+            <span className="inline-block bg-[var(--accent-primary)] text-[#FFFFFF] text-[11px] px-[7px] py-[1px] rounded-full">
               {unreadCount} non lu{unreadCount > 1 ? 's' : ''}
             </span>
           )}
         </div>
-        <span className="text-[11px] text-[#6B6A67] italic">Actualisation auto</span>
+        <span className="text-[11px] text-[var(--text-secondary)] italic">Actualisation auto</span>
       </div>
 
       {loading ? (
-        <div className="p-[32px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+        <div className="p-[32px] text-center text-[13px] text-[var(--text-secondary)]">Chargement…</div>
       ) : sorted.length === 0 ? (
-        <div className="bg-[#F7F7F6] rounded-[10px] p-[32px] text-center text-[13px] text-[#6B6A67]">
+        <div className="bg-[var(--bg-surface)] rounded-[10px] p-[32px] text-center text-[13px] text-[var(--text-secondary)]">
           Aucun message échangé avec {partnerName}.
         </div>
       ) : (
@@ -255,8 +255,8 @@ export function MessagesTab({
 
             return (
               <div key={msg.id}
-                className={`bg-[#FFFFFF] border rounded-[10px] transition-colors ${
-                  isUnread ? 'border-[#1A3A5C]' : 'border-[#E8E7E4]'
+                className={`bg-[var(--bg-card)] border rounded-[10px] transition-colors ${
+                  isUnread ? 'border-[var(--accent-primary)]' : 'border-[var(--border)]'
                 }`}>
                 {/* ROW — cliquable */}
                 <button
@@ -265,26 +265,26 @@ export function MessagesTab({
                 >
                   {/* Point non lu */}
                   <div className={`w-[6px] h-[6px] rounded-full flex-shrink-0 ${
-                    isUnread ? 'bg-[#1A3A5C]' : 'bg-transparent'
+                    isUnread ? 'bg-[var(--accent-primary)]' : 'bg-transparent'
                   }`}></div>
 
                   {/* Badge direction */}
-                  <span className={`inline-block border rounded-[4px] py-[1px] px-[6px] text-[10px] flex-shrink-0 ${
+                  <span className={`inline-block border rounded-[6px] py-[1px] px-[6px] text-[10px] flex-shrink-0 ${
                     isReceived
-                      ? 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]'
-                      : 'border-[#1A3A5C] text-[#1A3A5C] bg-[#E8EEF5]'
+                      ? 'border-[var(--msp-amber)] text-[var(--msp-amber)] bg-[var(--msp-amber-light)]'
+                      : 'border-[var(--accent-primary)] text-[var(--accent-primary)] bg-[var(--msp-blue-light)]'
                   }`}>
                     {isReceived ? '↓ Reçu' : '↑ Envoyé'}
                   </span>
 
                   <div className="flex-1 min-w-0">
-                    <span className={`text-[13px] block truncate ${isUnread ? 'font-medium text-[#1A1A19]' : 'text-[#1A1A19]'}`}>
+                    <span className={`text-[13px] block truncate ${isUnread ? 'font-medium text-[var(--text-primary)]' : 'text-[var(--text-primary)]'}`}>
                       {msg.subject}
                     </span>
-                    <span className="text-[11px] text-[#6B6A67]">{formatDate(msg.createdAt)}</span>
+                    <span className="text-[11px] text-[var(--text-secondary)]">{formatDate(msg.createdAt)}</span>
                   </div>
 
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B6A67" strokeWidth="1.5" strokeLinecap="round"
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round"
                     className={`flex-shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
                     <polyline points="6 9 12 15 18 9"/>
                   </svg>
@@ -292,20 +292,20 @@ export function MessagesTab({
 
                 {/* CONTENU ÉTENDU */}
                 {isOpen && (
-                  <div className="px-[16px] pb-[14px] border-t border-[#E8E7E4]">
-                    <div className="flex flex-wrap gap-[10px] py-[10px] mb-[12px] text-[12px] text-[#6B6A67]">
+                  <div className="px-[16px] pb-[14px] border-t border-[var(--border)]">
+                    <div className="flex flex-wrap gap-[10px] py-[10px] mb-[12px] text-[12px] text-[var(--text-secondary)]">
                       <span>
-                        {isReceived ? 'De' : 'À'} : <strong className="text-[#1A1A19]">
+                        {isReceived ? 'De' : 'À'} : <strong className="text-[var(--text-primary)]">
                           {isReceived ? partnerName : msg.author.name}
                         </strong>
                       </span>
                       <span>·</span>
                       <span>{formatDate(msg.createdAt)}</span>
                     </div>
-                    <p className="text-[13px] text-[#1A1A19] leading-[1.7] whitespace-pre-wrap">{msg.content}</p>
+                    <p className="text-[13px] text-[var(--text-primary)] leading-[1.7] whitespace-pre-wrap">{msg.content}</p>
                     {msg.attachedDoc && (
                       <a href={msg.attachedDoc.url} target="_blank" rel="noreferrer"
-                        className="inline-flex items-center gap-[6px] mt-[10px] text-[12px] text-[#1A3A5C] hover:underline border border-[#E8E7E4] rounded-[6px] py-[5px] px-[10px] hover:bg-[#F7F7F6] transition-colors">
+                        className="inline-flex items-center gap-[6px] mt-[10px] text-[12px] text-[var(--accent-primary)] hover:underline border border-[var(--border)] rounded-[8px] py-[5px] px-[10px] hover:bg-[var(--bg-surface)] transition-colors">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                           <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
                         </svg>
@@ -314,7 +314,7 @@ export function MessagesTab({
                     )}
                     <div className="flex justify-end mt-[10px]">
                       <button onClick={() => handleDelete(msg.id)} disabled={isPending}
-                        className="text-[12px] text-[#9B2335] hover:underline disabled:opacity-50">
+                        className="text-[12px] text-[var(--msp-red)] hover:underline disabled:opacity-50">
                         Supprimer
                       </button>
                     </div>

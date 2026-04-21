@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 
-const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
-const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+const ic = "w-full px-[13px] py-[9px] border border-[var(--border)] rounded-[8px] text-[13px] bg-[var(--bg-input)] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] outline-none transition-all focus:border-[var(--accent-primary)] focus:ring-[3px] focus:ring-[var(--accent-ring)]";
+const lc = "block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]";
 
 export default function NewMarchePage() {
   const router  = useRouter();
@@ -52,20 +52,20 @@ export default function NewMarchePage() {
   return (
     <DashboardLayout pageTitle="Nouveau marché">
       <div className="max-w-[680px] mx-auto">
-        <Link href="/dashboard/marche" className="inline-block text-[12px] text-[#6B6A67] hover:text-[#1A1A19] mb-[32px]">
+        <Link href="/dashboard/marche" className="inline-block text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-[32px]">
           ← Retour aux marchés
         </Link>
 
         {error && (
-          <div className="mb-[20px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[12px] text-[13px] text-[#9B2335]">{error}</div>
+          <div className="mb-[20px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-red)]">{error}</div>
         )}
 
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[32px_36px]">
-          <h2 className="text-[18px] font-medium text-[#1A1A19] mb-[8px]">Créer un marché</h2>
-          <p className="text-[13px] text-[#6B6A67] mb-[28px]">
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[32px_36px]">
+          <h2 className="text-[18px] font-medium text-[var(--text-primary)] mb-[8px]">Créer un marché</h2>
+          <p className="text-[13px] text-[var(--text-secondary)] mb-[28px]">
             Un marché est un projet ou contrat à exécuter avec un partenaire. Vous pourrez ensuite ajouter les étapes du planning.
           </p>
-          <div className="h-[1px] bg-[#E8E7E4] mb-[28px]"></div>
+          <div className="h-[1px] bg-[var(--border)] mb-[28px]"></div>
 
           <form onSubmit={handleSubmit}>
             {/* Partenaire */}
@@ -78,7 +78,7 @@ export default function NewMarchePage() {
                 ))}
               </select>
               {partners.length === 0 && (
-                <p className="text-[11px] text-[#8B4513] mt-[4px]">
+                <p className="text-[11px] text-[var(--msp-amber)] mt-[4px]">
                   Aucun partenaire actif.{' '}
                   <Link href="/dashboard/partners/new" className="underline">En créer un</Link>
                 </p>
@@ -118,21 +118,21 @@ export default function NewMarchePage() {
               </select>
             </div>
 
-            <div className="h-[1px] bg-[#E8E7E4] mb-[24px]"></div>
+            <div className="h-[1px] bg-[var(--border)] mb-[24px]"></div>
 
-            <div className="bg-[#F7F7F6] rounded-[8px] p-[14px] mb-[24px]">
-              <p className="text-[12px] text-[#6B6A67]">
+            <div className="bg-[var(--bg-surface)] rounded-[8px] p-[14px] mb-[24px]">
+              <p className="text-[12px] text-[var(--text-secondary)]">
                 💡 Après la création, vous pourrez ajouter les étapes du planning d&apos;exécution, les audits, comptes-rendus et suivre l&apos;avancement.
               </p>
             </div>
 
             <div className="flex justify-end gap-[12px]">
               <Link href="/dashboard/marche"
-                className="border border-[#E8E7E4] text-[#1A1A19] bg-[#FFFFFF] py-[10px] px-[16px] rounded-[6px] text-[13px] font-medium hover:bg-[#F7F7F6] transition-colors">
+                className="border border-[var(--border)] text-[var(--text-primary)] bg-[var(--bg-card)] py-[10px] px-[16px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--bg-surface)] transition-colors">
                 Annuler
               </Link>
               <button type="submit" disabled={isPending}
-                className={`bg-[#1A3A5C] text-[#FFFFFF] py-[10px] px-[16px] rounded-[6px] text-[13px] font-medium transition-colors ${isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[#142d4a]'}`}>
+                className={`bg-[var(--accent-primary)] text-[var(--bg-card)] py-[10px] px-[16px] rounded-[8px] text-[13px] font-medium transition-colors ${isPending ? 'opacity-70 cursor-wait' : 'hover:bg-[var(--msp-blue-mid)]'}`}>
                 {isPending ? 'Création…' : 'Créer le marché'}
               </button>
             </div>

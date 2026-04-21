@@ -41,13 +41,13 @@ export default function PartnerDetailPage({
 
   if (loading) return (
     <DashboardLayout pageTitle="Chargement…">
-      <div className="p-[48px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+      <div className="p-[48px] text-center text-[13px] text-[var(--text-secondary)]">Chargement…</div>
     </DashboardLayout>
   );
 
   if (!partner) return (
     <DashboardLayout pageTitle="Partenaire introuvable">
-      <div className="p-[48px] text-center text-[13px] text-[#9B2335]">Ce partenaire n&apos;existe pas.</div>
+      <div className="p-[48px] text-center text-[13px] text-[var(--msp-red)]">Ce partenaire n&apos;existe pas.</div>
     </DashboardLayout>
   );
 
@@ -55,27 +55,27 @@ export default function PartnerDetailPage({
     <DashboardLayout pageTitle={partner.orgName}>
 
       {/* HEADER PARTENAIRE */}
-      <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[24px] mb-[20px]">
+      <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[24px] mb-[20px]">
         <div className="flex flex-col lg:flex-row justify-between items-start gap-[24px]">
           {/* GAUCHE */}
           <div className="flex items-center gap-[16px]">
-            <div className="w-[56px] h-[56px] rounded-full bg-[#F7F7F6] border border-[#E8E7E4] flex items-center justify-center text-[18px] font-medium text-[#1A3A5C] flex-shrink-0">
+            <div className="w-[56px] h-[56px] rounded-full bg-[var(--bg-surface)] border border-[var(--border)] flex items-center justify-center text-[18px] font-medium text-[var(--accent-primary)] flex-shrink-0">
               {partner.orgName.substring(0, 2).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-[18px] font-medium text-[#1A1A19]">{partner.orgName}</h2>
-              <div className="text-[13px] text-[#6B6A67] mt-[2px]">{partner.contactName} · {partner.email}</div>
-              {partner.phone && <div className="text-[12px] text-[#6B6A67] mt-[1px]">{partner.phone}</div>}
+              <h2 className="text-[18px] font-medium text-[var(--text-primary)]">{partner.orgName}</h2>
+              <div className="text-[13px] text-[var(--text-secondary)] mt-[2px]">{partner.contactName} · {partner.email}</div>
+              {partner.phone && <div className="text-[12px] text-[var(--text-secondary)] mt-[1px]">{partner.phone}</div>}
               <div className="flex gap-[8px] mt-[10px] flex-wrap">
-                <span className="inline-block border border-[#E8E7E4] bg-transparent text-[#6B6A67] py-[2px] px-[8px] rounded-[4px] text-[12px]">
+                <span className="inline-block border border-[var(--border)] bg-transparent text-[var(--text-secondary)] py-[2px] px-[8px] rounded-[6px] text-[12px]">
                   {PARTNER_TYPE_LABELS[partner.type] || partner.type}
                 </span>
                 {partner.sector && (
-                  <span className="inline-block border border-[#E8E7E4] bg-transparent text-[#6B6A67] py-[2px] px-[8px] rounded-[4px] text-[12px]">
+                  <span className="inline-block border border-[var(--border)] bg-transparent text-[var(--text-secondary)] py-[2px] px-[8px] rounded-[6px] text-[12px]">
                     {partner.sector}
                   </span>
                 )}
-                <span className={`inline-block border rounded-[4px] py-[2px] px-[8px] text-[12px] ${STATUS_COLORS[partner.status] || ''}`}>
+                <span className={`inline-block border rounded-[6px] py-[2px] px-[8px] text-[12px] ${STATUS_COLORS[partner.status] || ''}`}>
                   {PARTNER_STATUS_LABELS[partner.status] || partner.status}
                 </span>
               </div>
@@ -85,11 +85,11 @@ export default function PartnerDetailPage({
           {/* DROITE — Actions */}
           <div className="flex flex-wrap gap-[8px]">
             <Link href={`/dashboard/partners/${partner.id}/edit`}
-              className="border border-[#E8E7E4] bg-transparent text-[#1A1A19] py-[6px] px-[12px] rounded-[6px] text-[12px] hover:bg-[#F7F7F6] transition-colors">
+              className="border border-[var(--border)] bg-transparent text-[var(--text-primary)] py-[6px] px-[12px] rounded-[8px] text-[12px] hover:bg-[var(--bg-surface)] transition-colors">
               Modifier
             </Link>
             <Link href={`/partner/${partner.token}`} target="_blank"
-              className="flex items-center gap-[6px] border border-[#E8E7E4] bg-transparent text-[#1A1A19] py-[6px] px-[12px] rounded-[6px] text-[12px] hover:bg-[#F7F7F6] transition-colors">
+              className="flex items-center gap-[6px] border border-[var(--border)] bg-transparent text-[var(--text-primary)] py-[6px] px-[12px] rounded-[8px] text-[12px] hover:bg-[var(--bg-surface)] transition-colors">
               Voir l&apos;espace partenaire
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                 <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/>
@@ -108,24 +108,24 @@ export default function PartnerDetailPage({
             { label: 'Marchés',    value: partner._count.markets    },
             { label: 'Contentieux',value: partner._count.contentieux},
           ].map(m => (
-            <div key={m.label} className="bg-[#F7F7F6] border border-[#E8E7E4] rounded-[8px] p-[12px]">
-              <div className="text-[15px] font-medium text-[#1A1A19]">{m.value}</div>
-              <div className="text-[12px] text-[#6B6A67] mt-[2px]">{m.label}</div>
+            <div key={m.label} className="bg-[var(--bg-surface)] border border-[var(--border)] rounded-[8px] p-[12px]">
+              <div className="text-[15px] font-medium text-[var(--text-primary)]">{m.value}</div>
+              <div className="text-[12px] text-[var(--text-secondary)] mt-[2px]">{m.label}</div>
             </div>
           ))}
         </div>
       </div>
 
       {/* ONGLETS */}
-      <div className="flex gap-0 border-b border-[#E8E7E4] mb-[24px] overflow-x-auto">
+      <div className="flex gap-0 border-b border-[var(--border)] mb-[24px] overflow-x-auto">
         {TABS.map(tab => (
           <Link
             key={tab.id}
             href={`/dashboard/partners/${partner.id}?tab=${tab.id}`}
             className={`py-[10px] px-[16px] text-[13px] transition-colors border-b-2 whitespace-nowrap ${
               currentTab === tab.id
-                ? 'text-[#1A1A19] font-medium border-[#1A3A5C]'
-                : 'text-[#6B6A67] border-transparent hover:text-[#1A1A19]'
+                ? 'text-[var(--text-primary)] font-medium border-[var(--accent-primary)]'
+                : 'text-[var(--text-secondary)] border-transparent hover:text-[var(--text-primary)]'
             }`}
           >
             {tab.label}

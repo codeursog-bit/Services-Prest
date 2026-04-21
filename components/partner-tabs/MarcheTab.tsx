@@ -16,10 +16,10 @@ interface Market {
 }
 
 const STATUS_CFG: Record<string, { label: string; cls: string }> = {
-  EN_COURS:    { label: 'En cours',    cls: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]' },
-  SUSPENDU:    { label: 'Suspendu',    cls: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]' },
-  CLOTURE:     { label: 'Clôturé',     cls: 'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]' },
-  CONTENTIEUX: { label: 'Contentieux', cls: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]' },
+  EN_COURS:    { label: 'En cours',    cls: 'border-[var(--msp-amber)] text-[var(--msp-amber)] bg-[var(--msp-amber-light)]' },
+  SUSPENDU:    { label: 'Suspendu',    cls: 'border-[var(--msp-red)] text-[var(--msp-red)] bg-[var(--msp-red-light)]' },
+  CLOTURE:     { label: 'Clôturé',     cls: 'border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)]' },
+  CONTENTIEUX: { label: 'Contentieux', cls: 'border-[var(--msp-red)] text-[var(--msp-red)] bg-[var(--msp-red-light)]' },
 };
 
 export default function MarcheTab({ partnerId }: { partnerId: string }) {
@@ -30,8 +30,8 @@ export default function MarcheTab({ partnerId }: { partnerId: string }) {
   const [error, setError]       = useState('');
   const [success, setSuccess]   = useState('');
 
-  const ic = "w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[13px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C] transition-colors";
-  const lc = "block text-[12px] font-medium text-[#1A1A19] mb-[6px]";
+  const ic = "w-full p-[10px_14px] border border-[var(--border)] rounded-[8px] text-[13px] bg-[var(--bg-card)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)] transition-colors";
+  const lc = "block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]";
 
   useEffect(() => {
     fetch(`/api/marche?partnerId=${partnerId}`)
@@ -86,21 +86,21 @@ export default function MarcheTab({ partnerId }: { partnerId: string }) {
     <div>
       {/* BARRE */}
       <div className="flex justify-between items-center mb-[16px]">
-        <p className="text-[13px] text-[#6B6A67]">{markets.length} marché{markets.length > 1 ? 's' : ''} avec ce partenaire</p>
+        <p className="text-[13px] text-[var(--text-secondary)]">{markets.length} marché{markets.length > 1 ? 's' : ''} avec ce partenaire</p>
         <button onClick={() => setShowForm(!showForm)}
-          className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[14px] rounded-[6px] text-[13px] font-medium hover:bg-[#142d4a] transition-colors">
+          className="bg-[var(--accent-primary)] text-[#FFFFFF] py-[8px] px-[14px] rounded-[8px] text-[13px] font-medium hover:bg-[var(--msp-blue-mid)] transition-colors">
           {showForm ? 'Annuler' : '+ Nouveau marché'}
         </button>
       </div>
 
       {/* FEEDBACK */}
-      {error   && <div className="mb-[12px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[10px] text-[13px] text-[#9B2335]">{error}</div>}
-      {success && <div className="mb-[12px] bg-[#EAF3DE] border border-[#2D6A4F] rounded-[6px] p-[10px] text-[13px] text-[#2D6A4F]">{success}</div>}
+      {error   && <div className="mb-[12px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[10px] text-[13px] text-[var(--msp-red)]">{error}</div>}
+      {success && <div className="mb-[12px] bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[8px] p-[10px] text-[13px] text-[var(--msp-green)]">{success}</div>}
 
       {/* FORM CRÉATION RAPIDE */}
       {showForm && (
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[20px] mb-[20px]">
-          <h3 className="text-[14px] font-medium text-[#1A1A19] mb-[16px]">Créer un marché</h3>
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[20px] mb-[20px]">
+          <h3 className="text-[14px] font-medium text-[var(--text-primary)] mb-[16px]">Créer un marché</h3>
           <form onSubmit={handleCreate}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-[14px] mb-[14px]">
               <div className="md:col-span-2">
@@ -122,11 +122,11 @@ export default function MarcheTab({ partnerId }: { partnerId: string }) {
             </div>
             <div className="flex gap-[10px] justify-end">
               <button type="button" onClick={() => setShowForm(false)}
-                className="border border-[#E8E7E4] text-[#1A1A19] py-[8px] px-[14px] rounded-[6px] text-[12px] hover:bg-[#F7F7F6]">
+                className="border border-[var(--border)] text-[var(--text-primary)] py-[8px] px-[14px] rounded-[8px] text-[12px] hover:bg-[var(--bg-surface)]">
                 Annuler
               </button>
               <button type="submit" disabled={isPending}
-                className="bg-[#1A3A5C] text-[#FFFFFF] py-[8px] px-[14px] rounded-[6px] text-[12px] font-medium hover:bg-[#142d4a] disabled:opacity-60">
+                className="bg-[var(--accent-primary)] text-[#FFFFFF] py-[8px] px-[14px] rounded-[8px] text-[12px] font-medium hover:bg-[var(--msp-blue-mid)] disabled:opacity-60">
                 {isPending ? 'Création…' : 'Créer'}
               </button>
             </div>
@@ -136,9 +136,9 @@ export default function MarcheTab({ partnerId }: { partnerId: string }) {
 
       {/* LISTE MARCHÉS */}
       {loading ? (
-        <div className="p-[32px] text-center text-[13px] text-[#6B6A67]">Chargement…</div>
+        <div className="p-[32px] text-center text-[13px] text-[var(--text-secondary)]">Chargement…</div>
       ) : markets.length === 0 ? (
-        <div className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[40px] text-center text-[13px] text-[#6B6A67]">
+        <div className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[40px] text-center text-[13px] text-[var(--text-secondary)]">
           Aucun marché avec ce partenaire.
         </div>
       ) : (
@@ -148,19 +148,19 @@ export default function MarcheTab({ partnerId }: { partnerId: string }) {
             const done  = m.steps.filter(s => s.status === 'TERMINE').length;
             const late  = m.steps.filter(s => s.status !== 'TERMINE' && s.status !== 'ANNULE' && new Date(s.endDate) < new Date()).length;
             return (
-              <div key={m.id} className="bg-[#FFFFFF] border border-[#E8E7E4] rounded-[10px] p-[16px_20px]">
+              <div key={m.id} className="bg-[var(--bg-card)] border border-[var(--border)] rounded-[10px] p-[16px_20px]">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-[12px]">
                   <div className="flex-1">
                     <div className="flex items-center gap-[8px] flex-wrap mb-[4px]">
                       <Link href={`/dashboard/marche/${m.id}`}
-                        className="text-[14px] font-medium text-[#1A1A19] hover:text-[#1A3A5C] hover:underline">
+                        className="text-[14px] font-medium text-[var(--text-primary)] hover:text-[var(--accent-primary)] hover:underline">
                         {m.name}
                       </Link>
-                      <span className={`inline-block border rounded-[4px] py-[1px] px-[6px] text-[11px] ${cfg.cls}`}>
+                      <span className={`inline-block border rounded-[6px] py-[1px] px-[6px] text-[11px] ${cfg.cls}`}>
                         {cfg.label}
                       </span>
                       {m._count.contentieux > 0 && (
-                        <span className="inline-block border border-[#9B2335] text-[#9B2335] bg-[#FCEBEB] rounded-[3px] py-[1px] px-[6px] text-[10px]">
+                        <span className="inline-block border border-[var(--msp-red)] text-[var(--msp-red)] bg-[var(--msp-red-light)] rounded-[3px] py-[1px] px-[6px] text-[10px]">
                           {m._count.contentieux} contentieux
                         </span>
                       )}
@@ -169,29 +169,29 @@ export default function MarcheTab({ partnerId }: { partnerId: string }) {
                     {/* Barre progression */}
                     <div className="flex items-center gap-[8px] mt-[8px]">
                       <div className="flex-1 h-[5px] bg-[#E8E7E4] rounded-full overflow-hidden">
-                        <div className="h-full bg-[#1A3A5C] transition-all" style={{ width: `${m.executionRate}%` }}></div>
+                        <div className="h-full bg-[var(--accent-primary)] transition-all" style={{ width: `${m.executionRate}%` }}></div>
                       </div>
-                      <span className="text-[12px] font-medium text-[#1A1A19] w-[36px] text-right">{m.executionRate}%</span>
+                      <span className="text-[12px] font-medium text-[var(--text-primary)] w-[36px] text-right">{m.executionRate}%</span>
                     </div>
 
-                    <div className="flex flex-wrap gap-[12px] mt-[6px] text-[12px] text-[#6B6A67]">
+                    <div className="flex flex-wrap gap-[12px] mt-[6px] text-[12px] text-[var(--text-secondary)]">
                       <span>{done}/{m.steps.length} étapes</span>
-                      {late > 0 && <span className="text-[#9B2335]">{late} en retard</span>}
+                      {late > 0 && <span className="text-[var(--msp-red)]">{late} en retard</span>}
                       {m.startDate && <span>{formatDateShort(m.startDate)} → {m.endDate ? formatDateShort(m.endDate) : '?'}</span>}
                     </div>
                   </div>
 
                   <div className="flex gap-[8px] flex-shrink-0">
                     <Link href={`/dashboard/marche/${m.id}`}
-                      className="text-[12px] text-[#1A3A5C] hover:underline">
+                      className="text-[12px] text-[var(--accent-primary)] hover:underline">
                       Détail
                     </Link>
                     <Link href={`/dashboard/marche/${m.id}/edit`}
-                      className="text-[12px] text-[#6B6A67] hover:underline">
+                      className="text-[12px] text-[var(--text-secondary)] hover:underline">
                       Modifier
                     </Link>
                     <button onClick={() => handleDelete(m.id, m.name)} disabled={isPending}
-                      className="text-[12px] text-[#9B2335] hover:underline disabled:opacity-50">
+                      className="text-[12px] text-[var(--msp-red)] hover:underline disabled:opacity-50">
                       Supprimer
                     </button>
                   </div>

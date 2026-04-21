@@ -24,38 +24,38 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] flex items-center justify-center p-[24px]">
+    <div className="min-h-screen bg-[var(--bg-card)] flex items-center justify-center p-[24px]">
       <div className="w-full max-w-[380px]">
-        <Link href="/login" className="inline-block text-[12px] text-[#6B6A67] hover:text-[#1A1A19] mb-[32px]">
+        <Link href="/login" className="inline-block text-[12px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] mb-[32px]">
           ← Retour à la connexion
         </Link>
 
-        <h2 className="text-[20px] font-medium text-[#1A1A19] mb-[8px]">Mot de passe oublié</h2>
-        <p className="text-[13px] text-[#6B6A67] mb-[28px]">
+        <h2 className="text-[20px] font-medium text-[var(--text-primary)] mb-[8px]">Mot de passe oublié</h2>
+        <p className="text-[13px] text-[var(--text-secondary)] mb-[28px]">
           Entrez votre adresse email. Si un compte existe, vous recevrez un lien de réinitialisation.
         </p>
 
         {sent ? (
-          <div className="bg-[#EAF3DE] border border-[#2D6A4F] rounded-[8px] p-[16px] text-[13px] text-[#2D6A4F]">
+          <div className="bg-[var(--msp-green-light)] border border-[var(--msp-green)] rounded-[8px] p-[16px] text-[13px] text-[var(--msp-green)]">
             ✓ Si un compte correspond à cet email, un lien de réinitialisation a été envoyé.
           </div>
         ) : (
           <>
             {error && (
-              <div className="mb-[16px] bg-[#FCEBEB] border border-[#9B2335] rounded-[6px] p-[12px] text-[13px] text-[#9B2335]">
+              <div className="mb-[16px] bg-[var(--msp-red-light)] border border-[var(--msp-red)] rounded-[8px] p-[12px] text-[13px] text-[var(--msp-red)]">
                 {error}
               </div>
             )}
             <form onSubmit={handleSubmit} className="flex flex-col gap-[16px]">
               <div>
-                <label className="block text-[12px] font-medium text-[#1A1A19] mb-[6px]">Adresse email</label>
+                <label className="block text-[12px] font-medium text-[var(--text-primary)] mb-[6px]">Adresse email</label>
                 <input type="email" required value={email} onChange={e => setEmail(e.target.value)}
                   placeholder="admin@melanieservices.com"
-                  className="w-full p-[10px_14px] border border-[#E8E7E4] rounded-[6px] text-[14px] bg-[#FFFFFF] text-[#1A1A19] focus:outline-none focus:border-[#1A3A5C]" />
+                  className="w-full p-[10px_14px] border border-[var(--border)] rounded-[8px] text-[14px] bg-[var(--bg-card)] text-[var(--text-primary)] focus:outline-none focus:border-[var(--accent-primary)]" />
               </div>
               <button type="submit" disabled={loading}
-                className={`w-full bg-[#1A3A5C] text-[#FFFFFF] py-[11px] rounded-[6px] text-[14px] font-medium transition-colors ${
-                  loading ? 'opacity-70 cursor-wait' : 'hover:bg-[#142d4a]'
+                className={`w-full bg-[var(--accent-primary)] text-[var(--bg-card)] py-[11px] rounded-[8px] text-[14px] font-medium transition-colors ${
+                  loading ? 'opacity-70 cursor-wait' : 'hover:bg-[var(--msp-blue-mid)]'
                 }`}>
                 {loading ? 'Envoi en cours…' : 'Envoyer le lien'}
               </button>

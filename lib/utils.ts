@@ -112,24 +112,24 @@ export const CONTENTIEUX_STATUS_LABELS: Record<string, string> = {
 // Classes CSS de couleur par statut (cohérence visuelle dans toute l'app)
 export const STATUS_COLORS: Record<string, string> = {
   // Partenaire
-  ACTIF:      'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]',
-  INACTIF:    'border-[#E8E7E4] text-[#6B6A67] bg-[#F7F7F6]',
-  EN_ATTENTE: 'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]',
+  ACTIF:      'border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)]',
+  INACTIF:    'border-[var(--border)] text-[var(--text-secondary)] bg-[var(--bg-surface)]',
+  EN_ATTENTE: 'border-[var(--msp-amber)] text-[var(--msp-amber)] bg-[var(--msp-amber-light)]',
   // Facture
-  NON_SOLDE:  'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]',
-  EN_COURS:   'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]',
-  PAYE:       'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]',
+  NON_SOLDE:  'border-[var(--msp-red)] text-[var(--msp-red)] bg-[var(--msp-red-light)]',
+  EN_COURS:   'border-[var(--msp-amber)] text-[var(--msp-amber)] bg-[var(--msp-amber-light)]',
+  PAYE:       'border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)]',
   // Étapes marché
-  A_VENIR:    'border-[#E8E7E4] text-[#6B6A67] bg-[#F7F7F6]',
-  TERMINE:    'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]',
-  RETARD:     'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]',
-  ANNULE:     'border-[#E8E7E4] text-[#6B6A67] bg-[#F7F7F6]',
+  A_VENIR:    'border-[var(--border)] text-[var(--text-secondary)] bg-[var(--bg-surface)]',
+  TERMINE:    'border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)]',
+  RETARD:     'border-[var(--msp-red)] text-[var(--msp-red)] bg-[var(--msp-red-light)]',
+  ANNULE:     'border-[var(--border)] text-[var(--text-secondary)] bg-[var(--bg-surface)]',
   // Dettes
-  ACCORDE:       'border-[#8B4513] text-[#8B4513] bg-[#FEF3E2]',
-  REMBOURSE:     'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]',
-  NON_REMBOURSE: 'border-[#9B2335] text-[#9B2335] bg-[#FCEBEB]',
-  REFUSE:        'border-[#E8E7E4] text-[#6B6A67] bg-[#F7F7F6]',
+  ACCORDE:       'border-[var(--msp-amber)] text-[var(--msp-amber)] bg-[var(--msp-amber-light)]',
+  REMBOURSE:     'border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)]',
+  NON_REMBOURSE: 'border-[var(--msp-red)] text-[var(--msp-red)] bg-[var(--msp-red-light)]',
+  REFUSE:        'border-[var(--border)] text-[var(--text-secondary)] bg-[var(--bg-surface)]',
   // Contentieux
-  RESOLU:     'border-[#2D6A4F] text-[#2D6A4F] bg-[#EAF3DE]',
-  ABANDONNE:  'border-[#E8E7E4] text-[#6B6A67] bg-[#F7F7F6]',
+  RESOLU:     'border-[var(--msp-green)] text-[var(--msp-green)] bg-[var(--msp-green-light)]',
+  ABANDONNE:  'border-[var(--border)] text-[var(--text-secondary)] bg-[var(--bg-surface)]',
 };
