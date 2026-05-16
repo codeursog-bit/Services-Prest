@@ -88,14 +88,6 @@ export async function POST(req: NextRequest) {
     });
 
     // Notification in-app
-    await (prisma as any).notification.create({
-      data: {
-        content:   `Nouveau partenaire créé : ${orgName}`,
-        type:      'INFO',
-        link:      `/dashboard/partners/${partner.id}`,
-        partnerId: partner.id,
-      },
-    });
 
     // Email de bienvenue au partenaire
     const { sendPartnerWelcome } = await import('@/lib/email');

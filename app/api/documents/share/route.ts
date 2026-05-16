@@ -41,14 +41,6 @@ export async function POST(req: NextRequest) {
       });
 
       // Notification in-app
-      await (prisma as any).notification.create({
-        data: {
-          content:   `Document "${source.name}" partagé avec ${partner.orgName}`,
-          type:      'INFO',
-          link:      `/dashboard/partners/${partnerId}?tab=documents`,
-          partnerId,
-        },
-      });
 
       // Email partenaire
       if (partner.notifyOnDoc) {

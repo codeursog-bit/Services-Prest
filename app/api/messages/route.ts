@@ -91,14 +91,6 @@ export async function POST(req: NextRequest) {
     });
 
     // Notification in-app
-    await (prisma as any).notification.create({
-      data: {
-        content:   `Information transmise à ${partner.orgName} : "${subject}"`,
-        type:      'INFO',
-        link:      `/dashboard/messages`,
-        partnerId,
-      },
-    });
 
     // Email au partenaire
     const accessLink = `${process.env.NEXT_PUBLIC_APP_URL}/partner/${partner.token}`;

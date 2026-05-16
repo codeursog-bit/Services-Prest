@@ -24,14 +24,20 @@ export async function uploadFile(file: File, folder: string): Promise<string> {
     ContentType: file.type,
   }));
 
-  const proto = process.env.MINIO_USE_SSL === 'true' ? 'https' : 'http';
-  return `${proto}://${process.env.MINIO_ENDPOINT}:${process.env.MINIO_PORT}/${process.env.MINIO_BUCKET_NAME}/${key}`;
+  // Stocker une URL proxy au lieu de l'IP directe MinIO
+  return `/api/documents/file?key=${encodeURIComponent(key)}`;
 }
 
 export async function deleteFile(url: string): Promise<void> {
   try {
-    const s3  = getS3();
-    const key = url.split(`/${process.env.MINIO_BUCKET_NAME}/`)[1];
+    const s3 = getS3();
+    // Extraire la clé depuis l'URL proxy ou l'ancienne URL directe
+    let key: string | undefined;
+    if (url.includes('/api/documents/file?key=')) {
+      key = decodeURIComponent(url.split('?key=')[1]);
+    } else {
+      key = url.split(`/${process.env.MINIO_BUCKET_NAME}/`)[1];
+    }
     if (!key) return;
     await s3.send(new DeleteObjectCommand({
       Bucket: process.env.MINIO_BUCKET_NAME!,

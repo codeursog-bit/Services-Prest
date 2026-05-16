@@ -2,7 +2,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM = 'Melanie Services <noreply@melanieservices.com>';
+const FROM = 'Melanie Services <noreply@melanieservices-prest.com>';
 
 // Template commun MSP
 function baseTemplate(body: string): string {

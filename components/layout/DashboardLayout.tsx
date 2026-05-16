@@ -71,6 +71,8 @@ export default function DashboardLayout({
   const pollRef     = useRef<ReturnType<typeof setInterval>>();
   const timerRef    = useRef<ReturnType<typeof setInterval>>();
   const lastActivityRef = useRef(Date.now());
+  // Flag pour éviter la redirection avant que le composant soit monté
+  const mountedRef = useRef(false);
 
   // ── Dark mode init ──
   useEffect(() => {
@@ -94,11 +96,16 @@ export default function DashboardLayout({
   }, []);
 
   useEffect(() => {
+    // Marquer le composant comme monté ET réinitialiser le timer
+    mountedRef.current = true;
+    lastActivityRef.current = Date.now();
+
     const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll'];
     events.forEach(e => document.addEventListener(e, resetTimer, { passive: true }));
 
     timerRef.current = setInterval(() => {
-      const elapsed = Math.floor((Date.now() - lastActivityRef.current) / 1000);
+      if (!mountedRef.current) return;
+      const elapsed   = Math.floor((Date.now() - lastActivityRef.current) / 1000);
       const remaining = Math.max(0, INACTIVITY_TIMEOUT - elapsed);
       setSecondsLeft(remaining);
       if (remaining === 0) {
@@ -108,6 +115,7 @@ export default function DashboardLayout({
     }, 1000);
 
     return () => {
+      mountedRef.current = false;
       events.forEach(e => document.removeEventListener(e, resetTimer));
       clearInterval(timerRef.current);
     };
@@ -284,7 +292,6 @@ export default function DashboardLayout({
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
                 Paramètres
               </Link>
-              {/* Dark toggle */}
               <button onClick={toggleDark}
                 className="w-full flex items-center gap-[8px] px-[12px] py-[9px] text-[12px] transition-colors"
                 style={{ color: 'var(--text-primary)' }}
@@ -338,9 +345,7 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          {/* Right actions */}
           <div className="flex items-center gap-[6px]">
-            {/* Timer compact topbar (visible lg+) */}
             <div className="hidden lg:flex items-center gap-[6px] px-[10px] py-[5px] rounded-[8px]"
               style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)' }}>
               <div className="w-[5px] h-[5px] rounded-full animate-pulse-dot" style={{ background: timerWarn ? 'var(--msp-red)' : 'var(--msp-green)' }} />
@@ -350,7 +355,6 @@ export default function DashboardLayout({
               </span>
             </div>
 
-            {/* Dark mode toggle topbar */}
             <button onClick={toggleDark}
               className="w-[34px] h-[34px] rounded-[8px] flex items-center justify-center transition-all"
               style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
@@ -363,7 +367,6 @@ export default function DashboardLayout({
               }
             </button>
 
-            {/* Notifications */}
             <Link href="/dashboard/notifications"
               className="relative w-[34px] h-[34px] rounded-[8px] flex items-center justify-center transition-all"
               style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
@@ -382,7 +385,6 @@ export default function DashboardLayout({
           </div>
         </header>
 
-        {/* Page content */}
         <main className="flex-1 overflow-y-auto p-[20px] lg:p-[24px]">
           {children}
         </main>

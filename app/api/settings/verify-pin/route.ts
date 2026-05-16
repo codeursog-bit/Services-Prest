@@ -1,32 +1,30 @@
 import { NextRequest } from 'next/server';
-import { auth } from '@/auth';
-import { cookies } from 'next/headers';
 import { apiSuccess, apiError } from '@/lib/utils';
+import prisma from '@/lib/prisma';
 
-// PIN stocké en cookie httpOnly hashé (simple pour cette app)
-// En production réelle, stocker en DB chiffré
-
-// POST /api/settings/verify-pin — vérifier le PIN
 export async function POST(req: NextRequest) {
   try {
-    const { pin } = await req.json();
+    const { pin, email } = await req.json();
+
     if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
       return apiError('PIN invalide (4 chiffres requis)');
     }
 
-    const cookieStore = await cookies();
-    const storedPin   = cookieStore.get('msp_pin')?.value;
+    if (!email) return apiError('Non authentifié', 401);
 
-    if (!storedPin) {
-      // Aucun PIN défini — accepter n'importe quel PIN pour le 1er accès
-      return apiSuccess({ valid: true });
-    }
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { pin: true },
+    });
 
-    const valid = storedPin === pin;
-    if (!valid) return apiSuccess({ valid: false });
+    const storedPin = user?.pin ?? '0000';
+    const valid     = storedPin === pin;
 
-    return apiSuccess({ valid: true });
+    console.log('verify-pin: storedPin =', storedPin, '| soumis =', pin, '| valid =', valid);
+
+    return apiSuccess({ valid });
   } catch (err) {
+    console.error('verify-pin error:', err);
     return apiError('Erreur serveur', 500);
   }
 }

@@ -64,15 +64,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    await (prisma as any).notification.create({
-      data: {
-        content:   `Nouveau marché créé : "${name}"`,
-        // @ts-ignore
-        type:      'INFO',
-        link:      `/dashboard/marche/${market.id}`,
-        partnerId,
-      },
-    });
 
     return apiSuccess({ market }, 201);
   } catch (err) {

@@ -85,14 +85,6 @@ export async function POST(req: NextRequest) {
       });
 
       if (partner) {
-        await prisma.notification.create({
-          data: {
-            content:   `Document "${file.name}" partagé avec ${partner.orgName}`,
-            type:      'INFO',
-            link:      `/dashboard/partners/${partnerId}?tab=documents`,
-            partnerId,
-          },
-        });
 
         if (partner.notifyOnDoc) {
           const accessLink = `${process.env.NEXT_PUBLIC_APP_URL}/partner/${partner.token}`;

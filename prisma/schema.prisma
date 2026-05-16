@@ -63,7 +63,7 @@ model User {
   phone     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+  pin        String?
   messagesSent     Message[]
   contractVersions ContractVersion[]
   notifications    Notification[]

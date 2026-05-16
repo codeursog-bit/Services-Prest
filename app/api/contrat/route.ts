@@ -52,13 +52,6 @@ export async function POST(req: NextRequest) {
       include: { author: { select: { name: true } } },
     });
 
-    await (prisma as any).notification.create({
-      data: {
-        content: `Nouvelle version du contrat ajoutée : ${versionName.trim()}`,
-        type:    'INFO',
-        link:    '/dashboard/contrat',
-      },
-    });
 
     return apiSuccess({ version }, 201);
   } catch (err) {

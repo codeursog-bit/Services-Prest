@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { apiError } from '@/lib/utils';
+import { apiError, apiSuccess } from '@/lib/utils';
+import prisma from '@/lib/prisma';
 
-// POST /api/settings/set-pin
 export async function POST(req: NextRequest) {
   const session = await auth();
-  if (!session) return apiError('Non authentifié', 401);
+  if (!session?.user?.email) return apiError('Non authentifié', 401);
 
   try {
     const { pin } = await req.json();
@@ -14,18 +14,12 @@ export async function POST(req: NextRequest) {
       return apiError('PIN invalide (4 chiffres requis)');
     }
 
-    const response = NextResponse.json({ success: true });
-
-    // Stocker le PIN en cookie httpOnly sécurisé
-    response.cookies.set('msp_pin', pin, {
-      httpOnly: true,
-      secure:   process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge:   365 * 24 * 60 * 60, // 1 an
-      path:     '/',
+    await prisma.user.update({
+      where: { email: session.user.email },
+      data: { pin },
     });
 
-    return response;
+    return apiSuccess({ updated: true });
   } catch (err) {
     return apiError('Erreur serveur', 500);
   }

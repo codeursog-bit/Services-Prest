@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import prisma from '@/lib/prisma';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   session: { strategy: 'jwt', maxAge: 24 * 60 * 60 },
   pages: {
     signIn: '/login',
@@ -12,8 +13,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
-        email:    { label: 'Email',         type: 'email'    },
-        password: { label: 'Mot de passe',  type: 'password' },
+        email:    { label: 'Email',        type: 'email'    },
+        password: { label: 'Mot de passe', type: 'password' },
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;

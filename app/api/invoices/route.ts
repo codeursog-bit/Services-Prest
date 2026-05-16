@@ -77,14 +77,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    await (prisma as any).notification.create({
-      data: {
-        content:   `Facture ${ref} créée pour ${invoice.partner.orgName} — ${Number(amount).toLocaleString('fr-FR')} FCFA`,
-        type:      'INFO',
-        link:      `/dashboard/banques`,
-        partnerId,
-      },
-    });
 
     return apiSuccess({ invoice }, 201);
   } catch (err: any) {
